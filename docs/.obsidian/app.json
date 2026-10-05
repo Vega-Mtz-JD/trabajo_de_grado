@@ -1,0 +1,8 @@
+{
+  "attachmentFolderPath": "adjuntos",
+  "newFileLocation": "folder",
+  "newFileFolderPath": "bitacora",
+  "alwaysUpdateLinks": true,
+  "showUnsupportedFiles": true,
+  "userIgnoreFilters": ["salida/", "exportar/plantilla_upea.docx"]
+}

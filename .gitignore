@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Datos de ejecución (nunca versionar BD, claves ni exportaciones)
+*.db
+*.db-*
+datos_locales/
+salida/
+*.pem
+*.key
+partes_shamir/
+
+# Fabric: material criptográfico y artefactos generados
+blockchain/network/organizations/
+blockchain/network/channel-artifacts/
+blockchain/network/*.tar.gz
+blockchain/bridge/bridge
+
+# SDK propietario de ZKTeco (no redistribuible)
+vendor/zkfinger/
+
+# IDE
+.idea/
+.vscode/
+
+# Obsidian (se versiona la configuración, no el estado de la ventana)
+docs/.obsidian/workspace*.json
+docs/.obsidian/cache
+docs/salida/
+docs/exportar/plantilla_upea.docx

@@ -1,0 +1,154 @@
+GUIA - TALLER II
+Le sugiero tickear cuando cumpla cada párrafo que se describe en esta guía.
+El Trabajo de Grado (TG) debe estar escrito con el Formato APA 7MA EDICION.
+Excepto el margen izquierdo 3cm. A al izquierda.
+Justificar las paginas
+https://normas-apa.org/wp-content/uploads/Guia-Normas-APA-7ma-edicion.pdf
+Aquí encontraras como citar diferentes documentos en APA 7ma edición.
+El Titulo del TG. . Debe contener la información siguiente:
+¿Qué es?    -  Sistema Web, Sistema de información, Modelo, Aplicación u otros.
+¿Para qué es? – Para seguimiento de…, para control de …, para determinar…, para pronosticar el…, u otros.   Se debe delimitar el TG en una región, un lugar, un intervalo de edades u otros.
+¿Con que herramienta u otro se desarrollara el TG? Es opcional: Basado en minería de datos, basado en redes neuronales, mediante técnicas de web scraping, u otros.
+Se recomienda que tenga “ No más de 30 palabras.”
+CAPITULO I
+MARCO REFERENCIAL
+
+La introducción del TG. 
+1er párrafo: La importancia de la tecnología orientada a su TG.
+2do párrafo: El problema que existe. ( NECESIDAD): EVITAR PERDIDAS,
+3er. Párrafo: La solución que se desarrolló en el TG. BONDADES
+4to párrafo: Las metodologías, herramientas y Bases de datos utilizadas para el desarrollo del TG.
+Todo descrito de manera suscita.
+Antecedentes. Debe ser máximo 5 años atrás (desde 2020 hasta la fecha, de forma secuencial)
+Institucionales. Describir las características de la Institución en estudio. Nombre, dirección, misión, visión y objetivos. Organigrama remarcar el departamento en estudio.
+Internacionales Describir de forma concreta los trabajos de Grado similares mínimo dos.
+Nacionales. Describir de forma concreta los Trabajos de Grado nacionales mínimo dos.
+Con referencias bibliográficas en formato APA 7ma edición
+El Problema principal .- ¿Donde? : La ciudad de La Paz, La Unidad educativa San Jorge, El GAMEA, La UPEA carrera Odontología, u otros.
+¿Qué procesos forman parte del problema? : La inscripción, asignación de materias, compras, ventas, u otros.
+¿Que causa el problema? : Pérdida de tiempo, no se cumpla la misión de la institución, filas para la atención, perdidas económicas para la institución, perdida de información, accesos a la información no autorizados, otros.
+Para poder definir el problema es imprescindible un Esquema ( entrada, proceso y salida) y el Diagrama de flujo de datos de la SITUACION ACTUAL. 
+https://www.youtube.com/watch?v=AAMm-BOaZpg
+https://www.youtube.com/watch?v=5553ZDOpiWk
+Puede usar BIZAGI u otra herramienta
+Donde se podrá reconocer los procesos que forman parte del problema, los mismos deben estar claramente identificados y estar relacionado con una necesidad a resolver que tenga una utilidad social implícita.
+Problemas específicos: Cada proceso con problema generara un problema específico. Se debe describir el problema y lo que causa.( Causa y efecto)
+Ejemplo:
+    •  No se cuenta con estadísticas de los ingresos generados por los tratamientos que realizan por periodos de tiempo, ni las deudas por cobrar, lo que ocasiona pérdidas económicas.
+Es recomendable, un promedio de 5 problemas específicos como máximo, estos problemas deben describirse de forma metódica los pasos relacionados con la secuencia de los resultados de la investigación. Y tener una relación jerárquica con el problema principal.
+Objetivo General:   DESARROLLO - IMPLEMENTACION
+El objetivo general responde al problema general, contiene la propuesta de solución, así mismo el lugar o región, el nombre completo del TG, como se elaborará y lo que se desea lograr con su desarrollo. Enunciado de modo infinitivo.
+Existen verbos que se pueden utilizar específicamente para el Objetivo general.
+Formato: Acción y propósito ,así mismo debe ser medible.
+Objetivos específicos.
+Cada objetivo específico debe responder a un problema específico y describir la solución al problema. Enunciado de forma infinitiva.
+Ejemplo con el problema anterior:  
+    • Sistematizar la generación de estadísticas de los ingresos generados por los tratamientos que realizan por periodos de tiempo y las deudas por cobrar, evitando pérdidas económicas. 
+HIPOTESIS: Es una proposición afirmativa, que constituye el elemento central de la propuesta de investigación. La que debe ser demostrada a través de la obtención de un valor de verdad al final del trabajo, con una confiabilidad definida. (Si corresponde)  HIPOTESIS NULA – HIPOTESIS ALTERNA
+Operacionalización de variables
+Contiene la descripción de las variables que conforman la hipótesis de trabajo de la propuesta de investigación, además de la descripción de la operatividad de cada una de las variables al interior de la hipótesis.
+Docimasia de la hipótesis
+Se relaciona con la demostración de la hipótesis a través de una técnica estadística conocida como docimasia de hipótesis en la etapa de desarrollo.
+
+Justificación: Responde a la pregunta:
+¿En qué aportará la investigación a la teoría existente sobre el tema?
+Justificación científica: ( si corresponde)
+Describe la justificación desde una óptica científica de la propuesta de investigación. Esta debe estar relacionada con el estado de arte de la investigación científica asociada a la propuesta.
+Justificación técnica:
+Describir si la Institución cuenta con los requerimientos de Software y Hardware, Hosting, Dominio para que el TG se implemente. Si no tuviese, explicar si la institución está de acuerdo en adquirirlo.
+Justificación económica.
+Describir la justificación costo beneficio desde una óptica económica. Si la institución obtendrá beneficios económicos al implementar la propuesta. Ejemplo: lograra minimizar pérdidas económicas y maximizar los ingresos.
+Justificación social:
+Describir a todos los usuarios directos e indirectos que se beneficiara con el TG, incluir sus cargos en la institución. Y explicar cómo se beneficiarán.
+	Metodología
+Define el terreno específicamente instrumental de la investigación asociada con la propuesta planteada.
+Método científico
+Define el camino por el cual transitar en busca del conocimiento teórico útil a la propuesta de investigación científica, normalmente a través de un conjunto de pasos asociados a la observación, lectura, análisis, reflexión y escritura.
+Método de ingeniería
+Establece el método de desarrollo del producto adecuado a la propuesta teórica de la propuesta de investigación científica, normalmente a través de un conjunto de pasos sistémicos, disciplinados y cuantificables.
+Herramientas
+Contiene el conjunto de herramientas que permiten el desarrollo del producto computacional asociado a la propuesta de investigación.
+Límites:
+Describir de forma puntual lo que el TG no realizará lo que no se ha hecho, en términos de sus limitaciones, es decir las razones.
+Ejemplo:
+    • La facturación no estará enlazada con el Sistema de Impuestos.
+    • Las ventas no se realizarán en línea.
+Alcances:
+Los alcances describirán todos los módulos del TG en orden. Es decir, la descripción en su concepción y diseño.  VER DIAGRAMA DE CONTEXTO PROPUESTO
+Aportes. Existen diferentes tipos de aportes, que son los beneficios que produce el trabajo de investigación.
+1. Impulsa el avance tecnológico
+En el presente, por ejemplo, que gracias a los conocimientos de la Ingeniería en Sistemas, hoy tenemos máquinas que realizan tareas que anteriormente tenían que hacerse manualmente y consumían una gran cantidad de tiempo.
+2. Identifica fallas en tecnologías existentes y las corrige
+Además de desarrollar nuevas tecnologías, con ellas se puede detectar los errores de las tendencias actuales y corregirlos: Ejemplo: Sistemas contables, sistemas académicos u otros.
+3. Optimiza la actividad empresarial
+Diseño, desarrollo e implementación de sistemas, aplicaciones, modelos u otros. Gracias a ello, las empresas pueden disfrutar de operaciones automatizadas, sistematizadas y optimizadas, lo que se traduce en mejores productos y servicios. Así  mismo mejora el proceso de toma de decisiones, lo que es vital para las instituciones que esperan perdurar en el tiempo y ser estables.
+4. Colabora con el desarrollo de la humanidad
+El diseño e implementación de programas que facilitan y optimizan procesos de enseñanza y aprendizaje.
+Un buen ejemplo de ello son las carreras en línea, un excelente y dinámico método de estudio. Ayuda a las personas a familiarizarse con la tecnología.
+Todo trabajo de grado es único y es flexible, escalable. Características que los sistemas gratuitos y otros no tienen.
+CAPITULO II
+MARCO TEORICO
+MARCO CONCEPTUAL
+Investigación bibliográfica: es un recuento completo y usualmente cronológico de investigaciones previas y del conocimiento actual del tema.
+Describir los conceptos de cada una de las palabras que forman parte del título del Trabajo de grado (TG)
+Describir los conceptos de cada una de las palabras que forman parte del desarrollo del TG. Por ejemplo: COMPRAS, VENTAS, INVENTARIOS, ETC. Se ira realizando a medida que se desarrolle el TG.
+Cada concepto de los dos párrafos anteriores debe contener información mínima de dos autores con la fuente correspondiente Y luego deben escribir su propio concepto ( parafrasear)
+MARCO METODOLOGICO
+Describir los conceptos y fases de la Metodología que se utilizará en el TG.  Con la fuente correspondiente.
+MARCO TECNOLOGICO
+Describir los conceptos de las Herramientas que se utilizarán en el TG. Con la fuente correspondiente.
+Descripción de los conceptos de Base de Datos que se utilizara en el TG. Con la fuente correspondiente.
+Describir los conceptos de las Pruebas que se realizaran: Caja Blanca, Caja Negra u otros.
+Describir los conceptos de la Seguridad  ISO 27000: Del Sistema (Claves de acceso, encriptación, otros), dependiendo  de las necesidades del sistema, así mismo de la Base de Datos, el sistema debe tener la estructura para poder encarar una auditoria. 
+Describir el concepto del Ciclo de vida de los sistemas, aplicaciones, modelos u otros.
+Describir los conceptos de las Métricas de calidad Ejemplo: ISO 25000, Mc Call u otros.
+Describir los conceptos de los Modelos de Costos: COCOMO, COMOMO II, otros.
+MARCO LEGAL
+CAPITULO III
+MARCO APLICATIVO
+Es la parte de su ejecución del trabajo de investigación, donde el investigador hará conocer sus definiciones, propuesta, diseño, modelo, desarrollo e implementación, pruebas y resultados, métricas de calidad, y costo total del proyecto (como elaboración propia).
+
+Describir la situación actual: Utilizar un Diagrama de flujo de datos del sistema actual donde se identificaron los problemas.
+Obtención de requerimientos funcionales y no funcionales.
+Diseño del TG acorde a la metodología elegida.
+Desarrollo del TG, tomando en cuenta la metodología elegida, las herramientas y la Base de datos. 
+CAPITULO IV
+CALIDAD Y SEGURIDAD
+
+Explicar de qué dependerá el ciclo del Vida del TG. ¿Cuánto tiempo será por qué?
+Obtención de resultados de Calidad. Poner los documentos pertinentes en Anexos.  
+Obtención de resultados del costo del sistema, verificar que el monto este acorde a nuestro medio. En relación al salario de los programadores u otros. (Hardware si corresponde) 
+Descripción del tipo de seguridad que se aplicó al TG, en cuanto al sistema y a la Base de Datos y al código. Ejemplo: Si existen ingresos al sistema no autorizados podemos saber: ¿Quién?, ¿A qué hora? ¿Cuándo se manipulo el Sistema?  Es decir, si hubo accesos no autorizados.
+Descripción de las Pruebas que se realizaron, de forma detallada: Caja negra, caja blanca u otros.
+CAPITULO V
+CONCLUSIONES Y RECOMENDACIONES
+
+Una conclusión por el objetivo general, como se alcanzó ese objetivo.
+
+Una conclusión por cada objetivo especifico.
+Las recomendaciones deberán ser emitidas una vez implementado el TG:  Ejemplo:  Obtener Backups, cada 15 días en un medio externo (Ver. Manual del usuario).
+Referencias bibliográficas
+Describir los autores que se referenciaron en el documento
+Bibliografía 
+Describir toda la bibliografía  lo que se ha utilizado en el desarrollo del TG. Aprender de memoria por lo menos dos autores. 
+MANUAL DEL USUARIO
+Describir la forma de operar el Sistema.
+Como hacer los Backups.
+MANUAL TECNICO
+Describir las características del Hardware y Software que será necesario.
+Describir los pasos a seguir para instalar el Sistema y los requerimientos necesarios (Tipo de Hosting, Base de datos, Ancho de Banda, otros).
+Información de – Como hacer el mantenimiento.
+Anexos
+Estadísticas de datos recolectados como inicio de la investigación (si corresponde)
+Diagrama de flujo de la situación actual
+Árbol de problemas
+Árbol de objetivos
+Algunas fotos y documentos que se utilizaban en el sistema manual.
+Esquema del Trabajo de Grado
+Apéndice
+Formularios que se llenaron al recolectar datos para las métricas de calidad.
+Obtención de los resultados del  cálculo de líneas del código. Con que herramienta se hizo.
+Aval del Tutor Metodológico
+Aval del Tutor Revisor
+Aval del Tutor Especialista
+Aval de la Institución, Si corresponde.

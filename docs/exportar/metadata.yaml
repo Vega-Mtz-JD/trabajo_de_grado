@@ -1,0 +1,9 @@
+# Metadatos para pandoc (exportación a Word)
+lang: es-BO
+title: "SISTEMA DE VOTACIÓN ELECTRÓNICA OFFLINE CON BLOCKCHAIN PARA AUDITORÍA Y VERIFICACIÓN MULTINIVEL DE RESULTADOS"
+subtitle: "CASO: [EMPRESA]"
+author: "Diego [Apellidos]"
+bibliography: ../referencias/bibliografia.bib
+csl: ../referencias/apa.csl
+link-citations: true
+toc-title: "ÍNDICE DE CONTENIDO"
