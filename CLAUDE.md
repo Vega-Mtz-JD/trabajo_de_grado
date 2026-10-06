@@ -23,6 +23,8 @@ scripts/      instalación, hardening, kiosco
 ```bash
 cd app && . .venv/bin/activate && pytest              # pruebas
 pytest --cov=votoseguro --cov-report=term-missing     # cobertura
+VOTOSEGURO_DSN='dbname=votoseguro' votoseguro demo    # elección simulada completa (BD de desarrollo)
+votoseguro verificar <paquete.vsx> --frase ...        # auditoría triple de un paquete USB
 docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/*.docx
 ```
 

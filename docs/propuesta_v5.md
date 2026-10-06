@@ -361,8 +361,8 @@ Con un nodo, Raft **no tolera fallas**. Se usa porque es el único consenso sopo
 
 | Función | Datos anclados | Validaciones |
 |---|---|---|
-| `RegistrarEleccion` | id, hash de la configuración (candidatos), compromiso del padrón (raíz de Merkle de los CI hasheados con sal, sin datos personales), huella de la clave pública | No debe existir ya |
-| `RegistrarApertura` | hash de la zerésima firmada | Estado = LISTA |
+| `RegistrarEleccion` | id, hash de la configuración (candidatos), huella de la clave pública de la elección, huella del dispositivo | No debe existir ya |
+| `RegistrarApertura` | hash de la zerésima firmada, compromiso del padrón (raíz de Merkle de los CI con sal, sin datos personales) y total del padrón | Estado = LISTA |
 | `RegistrarCheckpoint` | n.º de secuencia, conteo acumulado, raíz de Merkle | Estado = ABIERTA y conteo creciente |
 | `RegistrarCierre` | total de votos, total de votantes que votaron, raíz final | Estado = ABIERTA. Votos = votantes que votaron. |
 | `RegistrarEscrutinio` | resultados por opción, hash del acta | Estado = CERRADA. La suma debe ser igual al total. |

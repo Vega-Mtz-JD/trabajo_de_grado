@@ -39,6 +39,28 @@ La persistencia se implementó en PostgreSQL 17 con cinco esquemas (elección, p
 <!-- CAPTURA: salida de `pytest --cov=votoseguro` en la terminal (61 passed, 95 %). -->
 <!-- CAPTURA: diagrama entidad-relación de la BD generado con DBeaver o pgAdmin. -->
 
+#### Sprint 2: Proceso electoral completo y auditoría triple
+
+El segundo sprint implementó las fases del proceso electoral como servicios independientes: configuración, empadronamiento, apertura, identificación y emisión del voto, cierre, escrutinio, exportación y verificación. En la configuración se genera el par de claves de la elección y la clave privada se reparte entre cinco custodios, cuyas partes se imprimen con código QR. Durante el empadronamiento se registra la plantilla de huella de cada votante cifrada con la clave del equipo. La apertura comprueba el hardware y emite la zerésima, un acta firmada que certifica que la urna está vacía y compromete el padrón mediante una raíz de Merkle. En la votación, el votante se identifica con su cédula y su huella con un máximo de tres intentos; si la huella es ilegible, el operador puede autorizar una excepción justificada que queda registrada. Cada voto se cifra, se deposita en la urna y genera un comprobante impreso sin hora ni datos del votante, y cada diez votos se mezcla la urna y se registra un punto de control.
+
+Al cierre se verifica que el número de votos coincida con el de votantes marcados y se emite el acta de cierre firmada. El escrutinio requiere que tres de los cinco custodios presenten sus partes: la clave se reconstruye solo en memoria, se descifran y cuentan los votos y se emite el acta de escrutinio. Finalmente, el expediente completo se exporta a un paquete cifrado con un manifiesto firmado, y un verificador independiente contrasta el papel, el paquete y los anclajes del registro distribuido. Para validar el conjunto se desarrolló una simulación con cien votantes que incluye fallas de lectura, una excepción manual, un intento de doble voto y abstención; el verificador emitió un dictamen conforme en sus veintitrés comprobaciones.
+
+| Elemento del backlog | Resultado |
+|---|---|
+| Configuración y custodia de la clave (3 de 5) | Completado |
+| Empadronamiento biométrico (simulado) | Completado |
+| Apertura y zerésima firmada | Completado |
+| Identificación, huella 1:1, excepción manual y emisión con VVPAT | Completado |
+| Puntos de control con mezcla de urna | Completado |
+| Cierre, escrutinio y actas firmadas | Completado |
+| Exportación del paquete cifrado y verificador de auditoría triple | Completado |
+| Simulación de punta a punta (`votoseguro demo`) | Completado |
+| Pruebas automatizadas (81 pruebas, cobertura del 96 %) | Completado |
+
+<!-- CAPTURA: salida de `votoseguro demo` con el informe de auditoría CONFORME. -->
+<!-- CAPTURA: acta de cierre (salida_demo/impresiones/07_acta_cierre.pdf) y un VVPAT. -->
+<!-- CAPTURA: tabla auditoria.bitacora en pgAdmin mostrando la cadena de hashes. -->
+
 ### 3.2.4. Pruebas y calidad de software
 
 ### 3.2.5. Resultados

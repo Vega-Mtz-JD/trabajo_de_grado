@@ -36,3 +36,6 @@ docs/.obsidian/workspace*.json
 docs/.obsidian/cache
 docs/salida/
 docs/exportar/plantilla_upea.docx
+
+# Salidas de la simulación (impresiones PDF, paquetes USB, llavero de demo)
+salida_demo/

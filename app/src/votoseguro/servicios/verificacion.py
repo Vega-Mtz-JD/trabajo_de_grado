@@ -1,0 +1,202 @@
+"""Fase 11 — Verificación multinivel (auditoría triple, propuesta §14).
+
+Contrasta las tres fuentes de evidencia:
+  1. **Papel:** conteo manual de los VVPAT de la urna física (lo ingresa el auditor) y la
+     huella del dispositivo impresa en la zerésima.
+  2. **USB:** paquete exportado (firma del manifiesto, hashes, actas, votos, bitácora).
+  3. **Ledger:** anclajes en Fabric (se incorpora en el Sprint 3).
+
+Cada comprobación produce un ``Chequeo`` con resultado ✔ / ✘ / — (no evaluado). El informe es
+CONFORME solo si ninguna comprobación falla.
+"""
+
+import io
+import json
+import zipfile
+from collections import Counter
+from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+
+from cryptography.hazmat.primitives import serialization
+
+from votoseguro.auditoria.bitacora import verificar_cadena
+from votoseguro.cripto import firmas
+from votoseguro.cripto.hashing import canonico, hash_canonico, sha3
+from votoseguro.cripto.llavero import FraseIncorrecta, descifrar_con_frase, desde_b64
+from votoseguro.cripto.merkle import raiz_merkle
+from votoseguro.dominio.modelos import codigo_vvpat
+from votoseguro.servicios.exportacion import CONTEXTO_PAQUETE
+
+
+@dataclass(frozen=True)
+class Chequeo:
+    nivel: str          # PAPEL | USB | LEDGER
+    nombre: str
+    ok: bool | None     # None = no evaluado
+    detalle: str = ""
+
+
+@dataclass
+class Informe:
+    chequeos: list[Chequeo] = field(default_factory=list)
+
+    @property
+    def conforme(self) -> bool:
+        return all(c.ok is not False for c in self.chequeos)
+
+    def agregar(self, nivel: str, nombre: str, ok: bool | None, detalle: str = "") -> bool | None:
+        self.chequeos.append(Chequeo(nivel, nombre, ok, detalle))
+        return ok
+
+    def texto(self) -> str:
+        simbolo = {True: "✔", False: "✘", None: "—"}
+        lineas = [f"[{simbolo[c.ok]}] {c.nivel:<6} {c.nombre}" + (f" — {c.detalle}" if c.detalle else "")
+                  for c in self.chequeos]
+        fallas = sum(c.ok is False for c in self.chequeos)
+        lineas.append("")
+        lineas.append("RESULTADO: CONFORME" if self.conforme
+                      else f"RESULTADO: DISCREPANCIAS ({fallas} comprobaciones fallidas)")
+        return "\n".join(lineas)
+
+
+# --- Apertura del paquete --------------------------------------------------------------------
+
+def abrir_paquete(ruta: Path, frase: str, informe: Informe) -> dict[str, Any] | None:
+    """Descifra el paquete, verifica la firma del manifiesto y los hashes de cada archivo."""
+    try:
+        contenido = descifrar_con_frase(Path(ruta).read_bytes(), frase, CONTEXTO_PAQUETE)
+    except FraseIncorrecta:
+        informe.agregar("USB", "Descifrado del paquete", False, "frase incorrecta o archivo alterado")
+        return None
+    informe.agregar("USB", "Descifrado del paquete (AES-256-GCM íntegro)", True)
+
+    with zipfile.ZipFile(io.BytesIO(contenido)) as z:
+        archivos = {n: z.read(n) for n in z.namelist()}
+    manifiesto = json.loads(archivos.pop("manifiesto.json"))
+    firma = archivos.pop("manifiesto.firma")
+    dispositivo = json.loads(archivos["dispositivo.json"])
+    publica = serialization.load_pem_public_key(dispositivo["clave_publica_pem"].encode())
+    informe.agregar("USB", "Firma del manifiesto", firmas.verificar(publica, canonico(manifiesto), firma))
+
+    esperados = manifiesto["archivos"]
+    alterados = [n for n, d in archivos.items() if esperados.get(n) != sha3(d)]
+    faltantes = sorted(set(esperados) - set(archivos))
+    informe.agregar("USB", "Hashes de los archivos del paquete", not alterados and not faltantes,
+                    ", ".join(alterados + faltantes))
+    return {n: json.loads(d) for n, d in archivos.items()}
+
+
+# --- Verificación del expediente -------------------------------------------------------------
+
+def verificar_expediente(exp: dict[str, Any], informe: Informe, *,
+                         conteo_papel: dict[str, int] | None = None,
+                         huella_esperada: str | None = None) -> Informe:
+    eleccion, actas = exp["eleccion.json"], exp["actas.json"]
+    dispositivo = exp["dispositivo.json"]
+    publica = serialization.load_pem_public_key(dispositivo["clave_publica_pem"].encode())
+    codigos = [o["codigo"] for o in eleccion["opciones"]]
+
+    # Actas: hash y firma
+    for tipo in ("ZERESIMA", "CIERRE", "ESCRUTINIO"):
+        acta = actas.get(tipo)
+        if acta is None:
+            informe.agregar("USB", f"Acta {tipo}", False, "no existe")
+            continue
+        ok = (hash_canonico(acta["contenido"]) == acta["hash"]
+              and firmas.verificar(publica, canonico(acta["contenido"]), desde_b64(acta["firma"])))
+        informe.agregar("USB", f"Acta {tipo}: hash y firma del dispositivo", ok)
+    if any(t not in actas for t in ("ZERESIMA", "CIERRE", "ESCRUTINIO")):
+        return informe
+    zeresima, cierre, escrutinio = (actas[t]["contenido"] for t in ("ZERESIMA", "CIERRE", "ESCRUTINIO"))
+
+    # Identidad del dispositivo (anclaje en papel)
+    informe.agregar("USB", "Huella del dispositivo = la registrada en la zerésima",
+                    dispositivo["huella"] == zeresima["huella_dispositivo"])
+    if huella_esperada:
+        informe.agregar("PAPEL", "Huella del dispositivo = la impresa en la zerésima de papel",
+                        dispositivo["huella"] == huella_esperada.strip().lower())
+    else:
+        informe.agregar("PAPEL", "Huella del dispositivo contra la zerésima de papel", None, "no ingresada")
+
+    # Zerésima
+    informe.agregar("USB", "Zerésima: urna vacía al abrir",
+                    zeresima["votos_en_urna"] == 0
+                    and set(zeresima["votos_por_opcion"]) == set(codigos)
+                    and not any(zeresima["votos_por_opcion"].values()))
+
+    # Votos
+    votos = exp["votos.json"]
+    hashes = [v["hash"] for v in votos]
+    integros = all(sha3(desde_b64(v["cifrado"])) == v["hash"] for v in votos)
+    longitudes = {len(desde_b64(v["cifrado"])) for v in votos}
+    informe.agregar("USB", "Votos: hash de cada voto cifrado", integros)
+    informe.agregar("USB", "Votos: longitud uniforme (no revela la opción)", len(longitudes) <= 1)
+    informe.agregar("USB", "Votos: sin duplicados", len(set(hashes)) == len(hashes))
+
+    # Merkle y checkpoints
+    raiz = raiz_merkle(hashes) if len(set(hashes)) == len(hashes) else ""
+    cps = exp["checkpoints.json"]
+    informe.agregar("USB", "Raíz de Merkle = acta de cierre = acta de escrutinio",
+                    raiz == cierre["raiz_merkle"] == escrutinio["raiz_merkle"])
+    secuencia = [c["seq"] for c in cps] == list(range(1, len(cps) + 1))
+    crecientes = all(a["conteo"] <= b["conteo"] for a, b in zip(cps, cps[1:]))
+    ultimo_ok = bool(cps) and cps[-1]["conteo"] == len(votos) and cps[-1]["raiz_merkle"] == raiz
+    informe.agregar("USB", "Checkpoints: consecutivos, crecientes y el último = urna final",
+                    secuencia and crecientes and ultimo_ok)
+
+    # Conteos
+    total_resultados = sum(escrutinio["resultados"].values())
+    informe.agregar("USB", "Totales: urna = cierre = escrutinio = votantes marcados",
+                    len(votos) == cierre["total_votos"] == escrutinio["total"] == total_resultados
+                    == cierre["votantes_que_votaron"],
+                    f"{len(votos)} votos")
+    informe.agregar("USB", "Escrutinio encadenado al acta de cierre",
+                    escrutinio["hash_acta_cierre"] == actas["CIERRE"]["hash"])
+
+    # Boletas (código VVPAT → opción)
+    boletas = escrutinio["boletas"]
+    informe.agregar("USB", "Boletas: cada código VVPAT corresponde a un voto de la urna",
+                    Counter(c for c, _ in boletas) == Counter(codigo_vvpat(h) for h in hashes))
+    informe.agregar("USB", "Boletas: el conteo por opción = resultados del acta",
+                    dict(Counter(o for _, o in boletas)) == {k: v for k, v in escrutinio["resultados"].items() if v})
+
+    # Bitácora
+    entradas = [{**e, "momento": datetime.fromisoformat(e["momento"])} for e in exp["bitacora.json"]]
+    r = verificar_cadena(entradas, cierre["ultimo_hash_bitacora"])
+    informe.agregar("USB", "Bitácora encadenada íntegra y contiene el hash del acta de cierre", r.integra,
+                    f"{r.entradas} entradas" if r.integra else f"entrada {r.primera_falla}: {r.motivo}")
+    eventos = {(e["evento"], e["detalle"].get("eleccion")): e["detalle"] for e in exp["bitacora.json"]}
+    eid = eleccion["id"]
+    informe.agregar("USB", "Bitácora registra apertura, cierre y escrutinio con los hashes de las actas",
+                    eventos.get(("APERTURA", eid), {}).get("hash_zeresima") == actas["ZERESIMA"]["hash"]
+                    and eventos.get(("CIERRE", eid), {}).get("hash_acta") == actas["CIERRE"]["hash"]
+                    and eventos.get(("ESCRUTINIO", eid), {}).get("hash_acta") == actas["ESCRUTINIO"]["hash"])
+
+    # Papel
+    if conteo_papel is not None:
+        diferencias = {k: (conteo_papel.get(k, 0), v) for k, v in escrutinio["resultados"].items()
+                       if conteo_papel.get(k, 0) != v}
+        informe.agregar("PAPEL", "Conteo manual de VVPAT = resultados digitales", not diferencias,
+                        "; ".join(f"{k}: papel {p} ≠ digital {d}" for k, (p, d) in diferencias.items()))
+    else:
+        informe.agregar("PAPEL", "Conteo manual de VVPAT", None, "no ingresado")
+
+    # Ledger
+    anclajes = [o for o in exp["outbox.json"]
+                if o["argumentos"].get("eleccion_id") == eid and o["funcion"] == "RegistrarCierre"]
+    informe.agregar("LEDGER", "Anclaje del cierre registrado para Fabric",
+                    bool(anclajes) and anclajes[-1]["argumentos"]["raiz_merkle"] == cierre["raiz_merkle"])
+    informe.agregar("LEDGER", "Comparación con el ledger de Hyperledger Fabric", None,
+                    "se habilita en el Sprint 3")
+    return informe
+
+
+def verificar_paquete(ruta: Path, frase: str, *, conteo_papel: dict[str, int] | None = None,
+                      huella_esperada: str | None = None) -> Informe:
+    informe = Informe()
+    expediente = abrir_paquete(ruta, frase, informe)
+    if expediente is not None:
+        verificar_expediente(expediente, informe, conteo_papel=conteo_papel, huella_esperada=huella_esperada)
+    return informe

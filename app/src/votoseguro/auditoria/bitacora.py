@@ -17,6 +17,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import psycopg
+from psycopg.rows import dict_row
 from psycopg.types.json import Jsonb
 
 from votoseguro.cripto.hashing import canonico, sha3
@@ -47,7 +48,7 @@ class ResultadoVerificacion:
     motivo: str = ""
 
 
-def _momento_texto(momento: datetime) -> str:
+def momento_texto(momento: datetime) -> str:
     # Precisión de microsegundos en UTC: es lo que conserva timestamptz de PostgreSQL.
     return momento.astimezone(UTC).isoformat(timespec="microseconds")
 
@@ -55,7 +56,7 @@ def _momento_texto(momento: datetime) -> str:
 def calcular_hash(hash_anterior: str, momento: datetime, actor: str, evento: str,
                   detalle: dict[str, Any]) -> str:
     contenido = canonico({
-        "momento": _momento_texto(momento),
+        "momento": momento_texto(momento),
         "actor": actor,
         "evento": evento,
         "detalle": detalle,
@@ -72,41 +73,51 @@ def registrar(conn: psycopg.Connection, actor: str, evento: str,
         raise ValueError(f"la bitácora no puede registrar datos del voto: {sorted(prohibidas)}")
     momento = datetime.now(UTC)
     try:
-        # Serializa a los escritores concurrentes, igual que el trigger de la BD.
-        conn.execute("SELECT pg_advisory_xact_lock(hashtext('auditoria.bitacora'))")
-        fila = conn.execute(
-            "SELECT hash FROM auditoria.bitacora ORDER BY seq DESC LIMIT 1"
-        ).fetchone()
-        anterior = fila[0] if fila else HASH_GENESIS
-        nuevo = calcular_hash(anterior, momento, actor, evento, detalle)
-        seq = conn.execute(
-            """INSERT INTO auditoria.bitacora (momento, actor, evento, detalle, hash_anterior, hash)
-               VALUES (%s, %s, %s, %s, %s, %s) RETURNING seq""",
-            (momento, actor, evento, Jsonb(detalle), anterior, nuevo),
-        ).fetchone()[0]
+        # Transacción propia (o savepoint si ya hay una en curso): el bloqueo debe cubrir
+        # la lectura del último hash y la inserción.
+        with conn.transaction():
+            # Serializa a los escritores concurrentes, igual que el trigger de la BD.
+            conn.execute("SELECT pg_advisory_xact_lock(hashtext('auditoria.bitacora'))")
+            fila = conn.execute(
+                "SELECT hash FROM auditoria.bitacora ORDER BY seq DESC LIMIT 1"
+            ).fetchone()
+            anterior = fila[0] if fila else HASH_GENESIS
+            nuevo = calcular_hash(anterior, momento, actor, evento, detalle)
+            seq = conn.execute(
+                """INSERT INTO auditoria.bitacora (momento, actor, evento, detalle, hash_anterior, hash)
+                   VALUES (%s, %s, %s, %s, %s, %s) RETURNING seq""",
+                (momento, actor, evento, Jsonb(detalle), anterior, nuevo),
+            ).fetchone()[0]
     except psycopg.Error as e:
         raise traducir_error(e) from e
     return Entrada(seq, momento, actor, evento, detalle, anterior, nuevo)
 
 
-def verificar(conn: psycopg.Connection, ultimo_hash_anclado: str | None = None) -> ResultadoVerificacion:
-    """Recorre la bitácora completa y recalcula la cadena de hashes.
+def verificar_cadena(entradas: list[dict[str, Any]],
+                     ultimo_hash_anclado: str | None = None) -> ResultadoVerificacion:
+    """Verifica una lista de entradas (de la BD o de un paquete exportado).
 
+    Cada entrada tiene: seq, momento (datetime), actor, evento, detalle, hash_anterior, hash.
     La cadena por sí sola no detecta que se borren las *últimas* entradas. Por eso el hash
     final se ancla fuera de la BD (acta impresa y Fabric); si se pasa ``ultimo_hash_anclado``,
     se exige que la bitácora contenga esa entrada.
     """
-    filas = conn.execute(
-        """SELECT seq, momento, actor, evento, detalle, hash_anterior, hash
-             FROM auditoria.bitacora ORDER BY seq"""
-    ).fetchall()
     anterior = HASH_GENESIS
-    for seq, momento, actor, evento, detalle, hash_anterior, hash_guardado in filas:
-        if hash_anterior != anterior:
-            return ResultadoVerificacion(False, len(filas), seq, "enlace con la entrada anterior roto")
-        if calcular_hash(hash_anterior, momento, actor, evento, detalle) != hash_guardado:
-            return ResultadoVerificacion(False, len(filas), seq, "contenido alterado")
-        anterior = hash_guardado
-    if ultimo_hash_anclado is not None and ultimo_hash_anclado not in {f[6] for f in filas}:
-        return ResultadoVerificacion(False, len(filas), None, "falta la entrada anclada (¿entradas eliminadas?)")
-    return ResultadoVerificacion(True, len(filas))
+    for e in entradas:
+        if e["hash_anterior"] != anterior:
+            return ResultadoVerificacion(False, len(entradas), e["seq"], "enlace con la entrada anterior roto")
+        calculado = calcular_hash(e["hash_anterior"], e["momento"], e["actor"], e["evento"], e["detalle"])
+        if calculado != e["hash"]:
+            return ResultadoVerificacion(False, len(entradas), e["seq"], "contenido alterado")
+        anterior = e["hash"]
+    if ultimo_hash_anclado is not None and ultimo_hash_anclado not in {e["hash"] for e in entradas}:
+        return ResultadoVerificacion(False, len(entradas), None, "falta la entrada anclada (¿entradas eliminadas?)")
+    return ResultadoVerificacion(True, len(entradas))
+
+
+def verificar(conn: psycopg.Connection, ultimo_hash_anclado: str | None = None) -> ResultadoVerificacion:
+    """Recorre la bitácora completa de la BD y recalcula la cadena de hashes."""
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("""SELECT seq, momento, actor, evento, detalle, hash_anterior, hash
+                         FROM auditoria.bitacora ORDER BY seq""")
+        return verificar_cadena(cur.fetchall(), ultimo_hash_anclado)
