@@ -21,3 +21,7 @@ BEGIN
     END IF;
 END
 $$;
+
+-- El administrador de BD puede asumir el rol propietario (SET ROLE) solo para aplicar migraciones,
+-- pero NO hereda sus privilegios en el uso normal (PostgreSQL 16+). ADR-011.
+GRANT vs_propietario TO vs_admin_bd WITH INHERIT FALSE, SET TRUE;

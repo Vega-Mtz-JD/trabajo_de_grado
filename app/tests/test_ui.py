@@ -338,3 +338,31 @@ def test_kiosco_tecla_cero_corrige(qtbot, sesion):
     assert kiosco.pila.currentIndex() == 2 and "ENTER" in kiosco.findChild(type(kiosco.texto_eleccion), "teclas").text()
     qtbot.keyClick(kiosco, Qt.Key.Key_0)
     assert kiosco.pila.currentIndex() == 1 and kiosco.elegida is None
+
+
+def test_cabina_pasa_al_frente_y_devuelve_la_pantalla(qtbot, sesion):
+    """Con un solo monitor: al habilitar, la cabina se maximiza y activa; al terminar se minimiza
+    y el panel vuelve al frente. Con dos monitores la cabina no se minimiza."""
+    from votoseguro.servicios import configuracion
+    from votoseguro.servicios.configuracion import Candidatura
+    from votoseguro.servicios.votacion import SesionVoto
+
+    app = sesion()
+    eid = configuracion.crear_eleccion(app.ctx(), "Prueba de ventanas", [Candidatura("A", "Ana")],
+                                       bits=2048).eleccion_id
+    for una_pantalla in (True, False):
+        kiosco = VentanaKiosco(app, una_pantalla=una_pantalla)
+        ventana = VentanaPrincipal(app, kiosco)
+        qtbot.addWidget(ventana)
+        qtbot.addWidget(kiosco)
+        ventana.show()
+        kiosco.showMinimized()
+        kiosco.habilitar(SesionVoto(eid, "1234567", "HUELLA"))
+        assert kiosco.isVisible() and not kiosco.isMinimized()
+        assert kiosco.focusWidget() is not None and kiosco.focusWidget().objectName() == "opcion"
+        if una_pantalla:
+            assert kiosco.windowState() & Qt.WindowState.WindowMaximized
+        kiosco.sesion = None          # el votante terminó (sin emitir, para esta prueba)
+        kiosco.volver_a_espera()
+        assert kiosco.isMinimized() == una_pantalla
+        assert not ventana.isMinimized()

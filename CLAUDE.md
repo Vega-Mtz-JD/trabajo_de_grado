@@ -29,11 +29,13 @@ docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/
 blockchain/network/up.sh && blockchain/bridge/iniciar.sh   # Fabric + puente (luego: demo --fabric)
 pytest -m fabric                                      # integración con Fabric real
 votoseguro-ui [--fabric]                              # interfaz gráfica (panel de mesa + kiosco)
+votoseguro bd estado|migrar                           # migraciones del esquema (ADR-011)
 VOTOSEGURO_CAPTURAS=../docs/adjuntos/ui QT_QPA_PLATFORM=offscreen pytest tests/test_ui.py   # capturas
 ```
 
 ## Reglas técnicas no negociables
 - **BD: PostgreSQL 17** (la tutora prohíbe BD ligeras como SQLite). Driver psycopg 3, solo socket Unix.
+- **Cambios de esquema = migración nueva** en `datos/migraciones/NNNN_*.sql`; nunca editar una ya aplicada.
 - **Secreto del voto (ADR-004/008):** nunca guardar hora en votos ni en `ya_voto`; nunca registrar en
   bitácora/ledger/logs un identificador que vincule votante↔voto; textos cifrados de longitud fija.
 - **Nada de datos personales en Fabric.** Solo hashes, conteos y raíces de Merkle.
@@ -54,4 +56,5 @@ VOTOSEGURO_CAPTURAS=../docs/adjuntos/ui QT_QPA_PLATFORM=offscreen pytest tests/t
 ## Pendientes conocidos
 - `[EMPRESA]` sin definir. ADR-008 (PostgreSQL) pendiente del visto bueno de la tutora.
 - Hardware (ZKTeco ZK9500/SLK20R con SDK Linux, impresora ESC/POS) aún no comprado → usar simuladores.
+- Scripts de producción (`hardening_offline.sh`, `configurar_kiosco.sh`) simulan por defecto: NUNCA aplicarlos en la laptop de desarrollo.
 - Go 1.26.8 en `~/.local/go` (usar `source blockchain/network/entorno.sh`).

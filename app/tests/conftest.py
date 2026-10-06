@@ -68,6 +68,7 @@ def bd(instancia_pg):
         c.execute(f'CREATE DATABASE "{nombre}"')
     with psycopg.connect(host=host, dbname=nombre, user="postgres", autocommit=True) as c:
         c.execute("CREATE EXTENSION pgaudit")
+        c.execute(f'GRANT CREATE ON DATABASE "{nombre}" TO vs_propietario')
         instalar_esquema(c)
 
     conexiones = []
@@ -78,6 +79,7 @@ def bd(instancia_pg):
         return conn
 
     conectar.dsn = f"host={host} dbname={nombre}"
+    conectar.nombre = nombre
     yield conectar
     for conn in conexiones:
         conn.close()

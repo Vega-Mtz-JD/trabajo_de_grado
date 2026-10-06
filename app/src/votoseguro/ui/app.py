@@ -99,10 +99,13 @@ def iniciar(argv: list[str] | None = None):
     pantallas = qapp.screens()
     if len(pantallas) > 1:   # cabina en el segundo monitor
         kiosco.setGeometry(pantallas[1].availableGeometry())
+        kiosco.setScreen(pantallas[1])
     if args.kiosco:
         kiosco.showFullScreen()
-    else:
+    elif kiosco.una_pantalla:
         kiosco.resize(900, 760)
+        kiosco.showMinimized()      # un solo monitor: la cabina aparece al habilitarla
+    else:
         kiosco.show()
     ventana.showMaximized()
     return qapp, ventana, kiosco

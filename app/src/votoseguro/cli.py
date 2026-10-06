@@ -124,6 +124,18 @@ def _ledger(args) -> int:
     return 0
 
 
+def _bd(args) -> int:
+    from votoseguro.datos import migraciones
+
+    with conectar(args.dsn, autocommit=True) as conn:
+        if args.accion == "migrar":
+            hechas = migraciones.migrar(conn)
+            print("Migraciones aplicadas: " + ", ".join(hechas) if hechas else "El esquema ya está al día.")
+        for version, nombre, estado in migraciones.estado(conn):
+            print(f"  {version:04d}  {nombre:<40} {estado}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="votoseguro", description=__doc__.splitlines()[0])
     parser.add_argument("--version", action="version", version=f"votoseguro {__version__}")
@@ -164,6 +176,10 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("eleccion_global")
     p.add_argument("mesa")
     p.set_defaults(funcion=_ledger)
+
+    p = sub.add_parser("bd", help="migraciones del esquema de la base de datos")
+    p.add_argument("accion", choices=["estado", "migrar"])
+    p.set_defaults(funcion=_bd)
 
     args = parser.parse_args(argv)
     return args.funcion(args)

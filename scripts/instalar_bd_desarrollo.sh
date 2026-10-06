@@ -7,9 +7,11 @@
 # Qué hace:
 #   1. Activa pgaudit (shared_preload_libraries) y reinicia PostgreSQL.
 #   2. Crea los roles (vs_propietario, vs_app, vs_auditor, vs_admin_bd).
-#   3. Crea la BD votoseguro, la extensión pgaudit y el esquema (app/src/votoseguro/datos/esquema.sql).
-#   4. Crea un rol de inicio de sesión para tu usuario de Linux (miembro de vs_app y vs_auditor),
-#      para conectarte con psql o con DBeaver/pgAdmin.
+#   3. Crea la BD votoseguro (si no existe) y la extensión pgaudit.
+#   4. Crea un rol para tu usuario de Linux (miembro de vs_app, vs_auditor y vs_admin_bd), para conectarte
+#      con psql o pgAdmin y para aplicar migraciones.
+#   5. Aplica las migraciones pendientes del esquema (app/src/votoseguro/datos/migraciones/).
+#      Una BD ya instalada se reconoce como "línea base": NO se borran datos.
 #
 # En DESARROLLO PostgreSQL escucha en localhost (por defecto en Debian). La configuración de
 # PRODUCCIÓN (sin TCP, solo socket Unix) la aplica scripts/hardening_offline.sh (Sprint 5).
@@ -47,14 +49,12 @@ if [ "${1:-}" = "--recrear" ]; then
   psql_pg -c "DROP DATABASE IF EXISTS votoseguro WITH (FORCE)"
 fi
 
-if psql_pg -tAc "SELECT 1 FROM pg_database WHERE datname = 'votoseguro'" | grep -q 1; then
-  echo "==> La BD votoseguro ya existe (usa --recrear para reinstalar el esquema)"
-else
-  echo "==> Creando BD y esquema"
+if ! psql_pg -tAc "SELECT 1 FROM pg_database WHERE datname = 'votoseguro'" | grep -q 1; then
+  echo "==> Creando la BD votoseguro"
   psql_pg -c "CREATE DATABASE votoseguro ENCODING 'UTF8' TEMPLATE template0"
-  psql_pg -d votoseguro -c "CREATE EXTENSION pgaudit"
-  psql_pg -d votoseguro < "$SQL/esquema.sql"
 fi
+psql_pg -d votoseguro -c "CREATE EXTENSION IF NOT EXISTS pgaudit"
+psql_pg -c "GRANT CREATE ON DATABASE votoseguro TO vs_propietario"
 
 echo "==> Rol de desarrollo para el usuario '$USUARIO'"
 psql_pg <<SQL
@@ -64,8 +64,14 @@ BEGIN
     CREATE ROLE "$USUARIO" LOGIN;
   END IF;
 END \$\$;
-GRANT vs_app, vs_auditor TO "$USUARIO";
+-- vs_admin_bd permite aplicar migraciones (SET ROLE vs_propietario) sin heredar privilegios de dueño
+GRANT vs_app, vs_auditor, vs_admin_bd TO "$USUARIO";
 SQL
+
+echo "==> Migraciones del esquema (ADR-011)"
+VOTOSEGURO_BIN="$RAIZ/app/.venv/bin/votoseguro"
+[ -x "$VOTOSEGURO_BIN" ] || { echo "Falta el entorno Python: cd app && python3 -m venv .venv && pip install -e ."; exit 1; }
+sudo -u "$USUARIO" env VOTOSEGURO_DSN="dbname=votoseguro" "$VOTOSEGURO_BIN" bd migrar
 
 echo
 echo "Listo. Prueba:  psql -d votoseguro -c '\\dn'"

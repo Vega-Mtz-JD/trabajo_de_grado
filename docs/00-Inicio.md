@@ -28,6 +28,7 @@
 - [[bitacora/sprint-3|Sprint 3]] — varias urnas, foto, presencia, ausentes y consolidación (96 pruebas, 96 %)
 - [[bitacora/sprint-4|Sprint 4]] — Hyperledger Fabric: red, chaincode, puente, anclaje y auditoría LEDGER (108 pruebas + Go)
 - [[bitacora/sprint-5|Sprint 5]] — interfaces gráficas: panel de mesa y kiosco del votante (114 pruebas, 93 %)
+- [[bitacora/sprint-6|Sprint 6]] — migraciones, kiosco de producción, endurecimiento, respaldos y manuales (125 pruebas)
 
 ## Formato (Art. 34–35)
 Carta · Arial 11 (10 en tablas/figuras) · interlineado 2 · márgenes 2.55 / 2.55 / **3 izq** / 2.55 · número de página arriba a la derecha · APA 7 · cada capítulo en hoja nueva.

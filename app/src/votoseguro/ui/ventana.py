@@ -84,6 +84,15 @@ class VentanaPrincipal(QMainWindow):
         self.setCentralWidget(central)
         self._cargar_elecciones()
         self.navegacion.setCurrentRow(0)
+        kiosco.estado_cambiado.connect(self._cabina_libre)
+
+    def _cabina_libre(self, estado: str) -> None:
+        """Con un solo monitor, al terminar el votante el panel vuelve al frente."""
+        if estado == "ESPERA" and self.kiosco.una_pantalla:
+            if self.isMinimized():
+                self.showMaximized()
+            self.raise_()
+            self.activateWindow()
 
     # --- Elección activa -------------------------------------------------------------------
 

@@ -68,6 +68,12 @@ def crear_roles(conn: psycopg.Connection) -> None:
     conn.execute(_sql("roles.sql"))
 
 
-def instalar_esquema(conn: psycopg.Connection) -> None:
-    """Crea esquemas, tablas, triggers, funciones y privilegios en una BD vacía."""
-    conn.execute(_sql("esquema.sql"))
+def instalar_esquema(conn: psycopg.Connection) -> list[str]:
+    """Crea o actualiza el esquema aplicando las migraciones pendientes (ADR-011).
+
+    La conexión debe ser de un superusuario o de un miembro de ``vs_admin_bd``, en autocommit, y
+    ``vs_propietario`` debe tener ``CREATE`` sobre la base de datos.
+    """
+    from votoseguro.datos.migraciones import migrar
+
+    return migrar(conn)

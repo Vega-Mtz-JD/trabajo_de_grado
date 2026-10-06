@@ -18,9 +18,15 @@ if [ ! -f channel-artifacts/$CANAL.block ]; then
     -channelID $CANAL 2>&1 | tail -1
 fi
 
-paso "Compilando el chaincode (binario Go estático)"
 mkdir -p build
-(cd ../chaincode/acta && CGO_ENABLED=0 GOOS=linux go build -trimpath -o "$RED/build/acta" .)
+if [ "${VOTOSEGURO_SIN_COMPILAR:-0}" = 1 ] && [ -x build/acta ]; then
+  paso "Usando el chaincode ya compilado (equipo de producción sin Go)"
+else
+  paso "Compilando el chaincode (binario Go estático)"
+  # -buildvcs=false: el binario depende solo del código (sin commit de git), así el hash solo cambia
+  # si cambia el chaincode y no se crean secuencias del ciclo de vida innecesarias.
+  (cd ../chaincode/acta && CGO_ENABLED=0 GOOS=linux go build -trimpath -buildvcs=false -o "$RED/build/acta" .)
+fi
 
 paso "Empaquetando el chaincode como servicio (CCaaS)"
 TMP="$(mktemp -d)"

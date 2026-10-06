@@ -11,6 +11,7 @@ Estados:  ESPERA → (el operador habilita la cabina) → SELECCIÓN → CONFIRM
 """
 
 from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtGui import QGuiApplication
 from PySide6.QtWidgets import QDialog, QHBoxLayout, QPushButton, QStackedWidget, QVBoxLayout, QWidget
 
 from votoseguro.datos import repositorio as repo
@@ -30,9 +31,13 @@ class VentanaKiosco(QWidget):
     estado_cambiado = Signal(str)        # ESPERA | VOTANDO
     salida_autorizada = Signal()
 
-    def __init__(self, sesion_app, *, pantalla_completa: bool = False):
+    def __init__(self, sesion_app, *, pantalla_completa: bool = False, una_pantalla: bool | None = None):
         super().__init__()
         self.app = sesion_app
+        self.pantalla_completa = pantalla_completa
+        # Con un solo monitor, panel y cabina se turnan la pantalla: la cabina pasa al frente al
+        # habilitarse y se minimiza al terminar el votante. Con dos monitores queda fija en el segundo.
+        self.una_pantalla = len(QGuiApplication.screens()) < 2 if una_pantalla is None else una_pantalla
         self.sesion: SesionVoto | None = None
         self.opciones: list[Opcion] = []
         self.elegida: Opcion | None = None
@@ -146,6 +151,7 @@ class VentanaKiosco(QWidget):
         self.pila.removeWidget(anterior)
         anterior.deleteLater()
         self.pila.setCurrentIndex(1)
+        self.traer_al_frente()
         self.estado_cambiado.emit("VOTANDO")
 
     def elegir(self, opcion: Opcion) -> None:
@@ -187,7 +193,25 @@ class VentanaKiosco(QWidget):
         self._temporizador.stop()
         self.elegida = None
         self.pila.setCurrentIndex(0)
+        if self.una_pantalla and not self.pantalla_completa:
+            self.showMinimized()          # devuelve la pantalla al panel de mesa
         self.estado_cambiado.emit("ESPERA")
+
+    def traer_al_frente(self) -> None:
+        """Muestra la cabina al frente y con el foco. Se llama desde el clic del operador en
+        «Habilitar la cabina»: en Wayland, el escritorio solo permite activar una ventana como
+        respuesta a una acción del usuario (xdg-activation), así que debe hacerse en ese momento."""
+        if self.pantalla_completa:
+            self.showFullScreen()
+        elif self.una_pantalla:
+            self.showMaximized()
+        else:
+            self.showNormal()
+        self.raise_()
+        self.activateWindow()
+        primera = next((b for b in self.pila.currentWidget().findChildren(QPushButton)), None)
+        if primera:
+            primera.setFocus()
 
     # --- Teclado y cierre ------------------------------------------------------------------
 

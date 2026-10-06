@@ -15,5 +15,7 @@ Sirven como evidencia del proceso de ingeniería en el documento de Proyecto de 
 | [008](ADR-008-postgresql.md) | PostgreSQL 17 como BD del sistema (reemplaza SQLite/SQLCipher) + mezcla de urna | Propuesta |
 | [009](ADR-009-varias-mesas.md) | Varias urnas: definición exportable, padrón dividido local, foto, consolidación | Aceptada |
 | [010](ADR-010-red-fabric-ccaas.md) | Red Fabric: cryptogen, chaincode como servicio, hash del binario en el ciclo de vida | Aceptada |
+| [011](ADR-011-migraciones.md) | Migraciones versionadas del esquema (meta.migracion, línea base, vs_admin_bd) | Aceptada |
+| [012](ADR-012-pantallas-produccion.md) | Producción: sway con dos monitores (panel y cabina) en lugar de cage | Propuesta |
 
 Plantilla: `Estado · Contexto · Decisión · Consecuencias`.

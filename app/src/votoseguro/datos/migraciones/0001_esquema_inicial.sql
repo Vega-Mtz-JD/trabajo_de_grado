@@ -1,5 +1,5 @@
--- Esquema de la base de datos de VOTO SEGURO (PostgreSQL 17). Ver ADR-004 y ADR-008.
--- Se ejecuta como superusuario sobre una base de datos vacía, después de roles.sql.
+-- Migración 0001 — Esquema inicial de VOTO SEGURO (PostgreSQL 17). Ver ADR-004, ADR-008 y ADR-011.
+-- La aplica datos/migraciones.py dentro de una transacción con SET LOCAL ROLE vs_propietario.
 --
 -- Principios:
 --   * Mínimo privilegio: vs_app no tiene UPDATE/DELETE sobre votos ni bitácora; emite votos
@@ -14,7 +14,6 @@ CREATE SCHEMA urna       AUTHORIZATION vs_propietario;
 CREATE SCHEMA auditoria  AUTHORIZATION vs_propietario;
 CREATE SCHEMA blockchain AUTHORIZATION vs_propietario;
 
-SET ROLE vs_propietario;
 
 -- ===================================================================== Funciones comunes
 
@@ -347,7 +346,6 @@ CREATE TABLE blockchain.outbox (
     tx_id      text
 );
 
-RESET ROLE;
 
 -- ===================================================================== Privilegios
 
