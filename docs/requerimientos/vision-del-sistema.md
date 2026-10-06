@@ -47,6 +47,8 @@ actualizado: 2026-10-05
 | RF13 | **Consolidación** de todas las mesas: verificación de cada paquete y cómputo total | ✔ Sprint 3 |
 | RF14 | Anclaje de hitos en Hyperledger Fabric | ✔ Sprint 4 |
 | RF15 | Interfaces gráficas: kiosco del votante, panel del operador, panel del auditor | ✔ Sprint 5 |
+| RF16 | Salida del programa solo con el botón «Salir» y contraseña (no con la "X") | ✔ Sprint 5 |
+| RF17 | Votación completa por teclado: números para elegir, Enter confirma, Esc o 0 corrige | ✔ Sprint 5 |
 
 ## Requerimientos no funcionales (RNF)
 
@@ -58,5 +60,6 @@ actualizado: 2026-10-05
 | RNF04 | BD robusta: PostgreSQL 17 (exigencia de la tutora) |
 | RNF05 | Tiempo por votante ≤ 2 minutos |
 | RNF06 | Todo evento auditable: quién, qué y cuándo (bitácora + pgaudit) |
+| RNF07 | Interfaz minimalista, sencilla y agradable para el personal y los votantes; alto contraste y letra grande |
 
 Relacionado: [[propuesta_v5]], [[ADR-009-varias-mesas]], [[bitacora/sprint-2|Sprint 2]].

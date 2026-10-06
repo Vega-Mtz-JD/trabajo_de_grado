@@ -8,6 +8,7 @@ from votoseguro.ui.comun import etiqueta, mensaje
 
 class Pagina(QWidget):
     titulo = ""
+    menu = ""          # texto corto en el menú lateral (si está vacío, se usa el título)
     roles: set[Rol] = {Rol.ADMIN, Rol.OPERADOR, Rol.AUDITOR}
     estados: set[Estado] | None = None   # None = disponible siempre (no depende de la elección)
 
@@ -15,6 +16,8 @@ class Pagina(QWidget):
         super().__init__()
         self.app, self.ventana = sesion_app, ventana
         self.capa = QVBoxLayout(self)
+        self.capa.setContentsMargins(28, 12, 28, 28)
+        self.capa.setSpacing(14)
         self.capa.addWidget(etiqueta(self.titulo, "titulo"))
 
     def disponible(self) -> bool:

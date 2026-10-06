@@ -17,6 +17,7 @@ from votoseguro.ui.paginas.base import Pagina, elegir_archivos, elegir_carpeta, 
 
 class PaginaEmpadronamiento(Pagina):
     titulo = "Empadronamiento"
+    menu = "Empadronamiento"
     roles = {Rol.ADMIN, Rol.OPERADOR}
     estados = {Estado.CONFIGURACION, Estado.EMPADRONAMIENTO, Estado.LISTA}
 

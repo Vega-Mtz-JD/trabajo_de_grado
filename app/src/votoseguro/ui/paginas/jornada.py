@@ -20,6 +20,7 @@ from votoseguro.ui.paginas.base import Pagina, pedir_texto
 
 class PaginaJornada(Pagina):
     titulo = "Jornada de votación"
+    menu = "Jornada de votación"
     roles = {Rol.ADMIN, Rol.OPERADOR}
     estados = {Estado.LISTA, Estado.ABIERTA}
 

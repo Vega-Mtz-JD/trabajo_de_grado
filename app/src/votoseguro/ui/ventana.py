@@ -3,12 +3,15 @@ según el rol del usuario y el estado de la elección, y barra de estado."""
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QComboBox, QHBoxLayout, QListWidget, QListWidgetItem, QMainWindow, QScrollArea, QStackedWidget, QVBoxLayout,
-    QWidget,
+    QComboBox, QDialog, QHBoxLayout, QListWidget, QListWidgetItem, QMainWindow, QPushButton, QScrollArea,
+    QStackedWidget, QVBoxLayout, QWidget,
 )
 
-from votoseguro.ui.comun import etiqueta
+from votoseguro.auditoria import bitacora
+
+from votoseguro.ui.comun import etiqueta, mensaje
 from votoseguro.ui.estilo import HOJA, color_estado
+from votoseguro.ui.login import Bloqueo, DialogoLogin
 from votoseguro.ui.paginas.auditoria import PaginaAuditoria
 from votoseguro.ui.paginas.configuracion import PaginaConfiguracion
 from votoseguro.ui.paginas.empadronamiento import PaginaEmpadronamiento
@@ -24,10 +27,16 @@ class VentanaPrincipal(QMainWindow):
         self.app, self.kiosco = sesion_app, kiosco
         self.setWindowTitle("VOTO SEGURO — Panel de mesa")
         self.setStyleSheet(HOJA)
+        # Sin botón de cerrar: se sale con «Salir», que pide contraseña (según el escritorio, la "X"
+        # puede seguir visible, pero no cierra la ventana; en modo kiosco no hay decoraciones).
+        self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
+        self._salida_autorizada = False
+        self.bloqueo_salida = Bloqueo()
         self.resize(1366, 768)
 
         cabecera = QHBoxLayout()
-        cabecera.addWidget(etiqueta("VOTO SEGURO", "titulo", ajuste=False))
+        cabecera.setContentsMargins(16, 10, 16, 4)
+        cabecera.addWidget(etiqueta("VOTO SEGURO", "marca", ajuste=False))
         self.selector = QComboBox()
         self.selector.setMinimumWidth(340)
         self.selector.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon)
@@ -38,11 +47,16 @@ class VentanaPrincipal(QMainWindow):
         cabecera.addStretch()
         cabecera.addWidget(self.selector)
         cabecera.addWidget(self.estado)
-        cabecera.addWidget(etiqueta(f"👤 {self.app.usuario} ({self.app.rol.value.lower()})", "ayuda", ajuste=False))
+        cabecera.addWidget(etiqueta(f"{self.app.usuario} · {self.app.rol.value.lower()}", "ayuda", ajuste=False))
+        self.boton_salir = QPushButton("Salir")
+        self.boton_salir.setObjectName("salir")
+        self.boton_salir.setToolTip("Cerrar el programa (pide su contraseña)")
+        self.boton_salir.clicked.connect(self.salir)
+        cabecera.addWidget(self.boton_salir)
 
         self.navegacion = QListWidget()
         self.navegacion.setObjectName("navegacion")
-        self.navegacion.setFixedWidth(270)
+        self.navegacion.setFixedWidth(230)
         self.navegacion.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.pila = QStackedWidget()
         self.paginas = [PaginaInicio(self.app, self), PaginaConfiguracion(self.app, self),
@@ -54,13 +68,14 @@ class VentanaPrincipal(QMainWindow):
             desplazable.setWidgetResizable(True)
             desplazable.setWidget(pagina)
             self.pila.addWidget(desplazable)
-            self.navegacion.addItem(QListWidgetItem(pagina.titulo))
+            self.navegacion.addItem(QListWidgetItem(pagina.menu or pagina.titulo))
         self.navegacion.currentRowChanged.connect(self._mostrar)
 
         cuerpo = QHBoxLayout()
         cuerpo.setContentsMargins(0, 0, 0, 0)
         cuerpo.addWidget(self.navegacion)
         contenido = QVBoxLayout()
+        contenido.setContentsMargins(0, 0, 0, 0)
         contenido.addLayout(cabecera)
         contenido.addWidget(self.pila, 1)
         cuerpo.addLayout(contenido, 1)
@@ -106,7 +121,8 @@ class VentanaPrincipal(QMainWindow):
                 self.selector.setItemText(indice, descripciones[actual])
         e = self.app.eleccion()
         self.estado.setText(e.estado.value if e else "SIN ELECCIÓN")
-        self.estado.setStyleSheet(f"background: {color_estado(e.estado.value if e else '')};")
+        texto, fondo = color_estado(e.estado.value if e else "")
+        self.estado.setStyleSheet(f"color: {texto}; background: {fondo};")
         for i, pagina in enumerate(self.paginas):
             self.navegacion.item(i).setHidden(self.app.rol not in pagina.roles)
             item = self.navegacion.item(i)
@@ -140,11 +156,26 @@ class VentanaPrincipal(QMainWindow):
     def barra(self, texto: str) -> None:
         self.statusBar().showMessage(texto, 8000)
 
-    def closeEvent(self, evento) -> None:
+    def salir(self) -> None:
+        """Salida del programa: exige la contraseña de un usuario del personal (bloqueo tras 3 intentos)."""
         if self.kiosco.ocupada:
-            self.barra("Hay un votante en la cabina: no se puede cerrar el panel")
-            evento.ignore()
+            mensaje(self, "Cabina ocupada", "Hay un votante en la cabina. Espere a que termine para salir.", error=True)
             return
+        dialogo = DialogoLogin(self.app.conn, self.bloqueo_salida, None, "Salir del sistema", self)
+        dialogo.campo_usuario.setText(self.app.usuario)
+        dialogo.campo_clave.setFocus()
+        dialogo.boton.setText("Salir")
+        if dialogo.exec() != QDialog.DialogCode.Accepted:
+            return
+        bitacora.registrar(self.app.conn, dialogo.usuario, "SALIDA_SISTEMA", {"sesion": self.app.usuario})
+        self._salida_autorizada = True
         self.kiosco._cierre_autorizado = True
         self.kiosco.close()
-        evento.accept()
+        self.close()
+
+    def closeEvent(self, evento) -> None:
+        if self._salida_autorizada:
+            evento.accept()
+            return
+        evento.ignore()   # "X", Alt+F4…: solo se sale con el botón «Salir»
+        self.barra("Para cerrar el programa use el botón «Salir» (pide su contraseña).")

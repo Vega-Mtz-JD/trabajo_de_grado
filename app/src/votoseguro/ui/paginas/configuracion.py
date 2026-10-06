@@ -17,6 +17,7 @@ from votoseguro.ui.paginas.base import Pagina, pedir_frase, pedir_texto
 
 class PaginaConfiguracion(Pagina):
     titulo = "Configuración de la elección"
+    menu = "Configuración"
     roles = {Rol.ADMIN}
 
     def __init__(self, sesion_app, ventana):

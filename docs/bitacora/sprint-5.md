@@ -34,8 +34,17 @@ operador y auditor, y el **kiosco del votante** para la cabina, sobre los servic
 - Pendiente para el Sprint 6: el compositor `cage` muestra una sola ventana; con dos monitores (mesa + cabina)
   hay que definir la configuración de salida (ver [[ADR-005-interfaz-kiosco]]).
 
+## Mejoras solicitadas por Diego (revisión del sprint)
+- [x] **Sin cierre con la "X"**: la ventana ignora la "X" y Alt+F4; se sale con el botón **Salir**, que pide
+  contraseña (bloqueo tras 3 intentos) y registra `SALIDA_SISTEMA` en la bitácora. Según el escritorio, la "X"
+  puede seguir dibujada, pero no cierra; en modo kiosco (`--kiosco`, `cage`) no hay decoraciones.
+- [x] **Confirmación por teclado** en la cabina: «Presione ENTER para confirmar · ESC o 0 para corregir», también
+  en los botones; la tecla **0** corrige.
+- [x] **Estilo minimalista**: fondo claro, un solo color de acento, tarjetas blancas, menú lateral claro con
+  etiquetas cortas, estados como etiquetas de tono suave; kiosco blanco con tarjetas grandes.
+
 ## Pruebas
-`pytest` → **114 aprobadas** (incluye 6 de interfaz y 3 de Fabric real), cobertura **93 %**; `bandit` 0 hallazgos.
+`pytest` → **113 aprobadas** con la red apagada (más 3 de Fabric real que pasan con la red encendida; 8 de interfaz), cobertura **92 %**; `bandit` 0 hallazgos.
 La prueba `test_eleccion_completa_desde_la_interfaz` recorre con clics toda la elección: configuración,
 3 empadronados con foto, apertura, voto con ratón, huella fallida + excepción + voto con teclado (con
 corrección), doble voto rechazado, cierre, escrutinio con 3 partes, exportación y auditoría CONFORME.

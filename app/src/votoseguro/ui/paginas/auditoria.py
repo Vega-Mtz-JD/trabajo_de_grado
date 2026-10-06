@@ -19,6 +19,7 @@ from votoseguro.ui.paginas.base import Pagina, elegir_archivos
 
 class PaginaAuditoria(Pagina):
     titulo = "Auditoría y consolidación"
+    menu = "Auditoría"
     roles = {Rol.ADMIN, Rol.AUDITOR}
 
     def __init__(self, sesion_app, ventana):

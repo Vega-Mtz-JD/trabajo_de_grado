@@ -41,6 +41,8 @@ class VentanaKiosco(QWidget):
         self.setStyleSheet(HOJA_KIOSCO)
         if pantalla_completa:
             self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint)
+        else:
+            self.setWindowFlag(Qt.WindowType.WindowCloseButtonHint, False)
 
         self.pila = QStackedWidget()
         self.pila.addWidget(self._pantalla_espera())
@@ -75,7 +77,8 @@ class VentanaKiosco(QWidget):
         capa = QVBoxLayout(w)
         eleccion = repo.obtener_eleccion(self.app.conn, self.sesion.eleccion_id)
         capa.addWidget(etiqueta(eleccion.nombre, "titulo"))
-        capa.addWidget(etiqueta("Toque su opción (o presione su número en el teclado).", "ayuda"))
+        capa.addWidget(etiqueta("Toque su opción o presione su número en el teclado.", "ayuda"))
+        capa.addSpacing(12)
         for i, opcion in enumerate(self.opciones, 1):
             texto = f"  {i}.  {opcion.nombre}" + (f"\n        {opcion.frente}" if opcion.frente else "")
             boton = QPushButton(texto)
@@ -95,11 +98,15 @@ class VentanaKiosco(QWidget):
         self.texto_eleccion.setAlignment(Qt.AlignmentFlag.AlignCenter)
         capa.addWidget(self.texto_eleccion)
         capa.addStretch()
+        teclas = etiqueta("Presione  ENTER  para confirmar   ·   ESC  o  0  para corregir", "teclas")
+        teclas.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        capa.addWidget(teclas)
         botones = QHBoxLayout()
-        self.boton_corregir = QPushButton("◀  Corregir")
+        botones.setSpacing(24)
+        self.boton_corregir = QPushButton("Corregir   (Esc / 0)")
         self.boton_corregir.setObjectName("corregir")
         self.boton_corregir.clicked.connect(self.corregir)
-        self.boton_confirmar = QPushButton("Confirmar voto  ✔")
+        self.boton_confirmar = QPushButton("Confirmar voto   (Enter)")
         self.boton_confirmar.setObjectName("confirmar")
         self.boton_confirmar.clicked.connect(self.confirmar)
         botones.addWidget(self.boton_corregir)
@@ -192,7 +199,7 @@ class VentanaKiosco(QWidget):
                 self.elegir(self.opciones[indice])
         elif actual == 2 and tecla in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
             self.confirmar()
-        elif actual == 2 and tecla == Qt.Key.Key_Escape:
+        elif actual == 2 and tecla in (Qt.Key.Key_Escape, Qt.Key.Key_0):
             self.corregir()
         # Cualquier otra tecla (Alt+F4, Escape en otras pantallas…) se ignora.
 

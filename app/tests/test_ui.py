@@ -95,9 +95,8 @@ def test_login_bloquea_tras_tres_intentos(qtbot, sesion):
 
 
 def test_navegacion_segun_rol(qtbot, sesion):
-    for rol, visibles in ((Rol.OPERADOR, {"Resumen de la mesa", "Empadronamiento", "Jornada de votación",
-                                          "Escrutinio y exportación"}),
-                          (Rol.AUDITOR, {"Resumen de la mesa", "Auditoría y consolidación"})):
+    for rol, visibles in ((Rol.OPERADOR, {"Resumen", "Empadronamiento", "Jornada de votación", "Escrutinio"}),
+                          (Rol.AUDITOR, {"Resumen", "Auditoría"})):
         app = sesion(rol, f"{rol.value.lower()}.prueba")
         kiosco = VentanaKiosco(app)
         ventana = VentanaPrincipal(app, kiosco)
@@ -296,3 +295,46 @@ def test_pagina_usuarios_crea_operador(qtbot, sesion, dialogos):
     pagina.clave.setText("clave-operador-1")
     qtbot.mouseClick(boton(pagina, "Crear usuario"), Qt.MouseButton.LeftButton)
     assert dialogos["mensajes"][-1][0] == "Error de base de datos"
+
+
+def test_salir_requiere_contrasena_y_la_x_no_cierra(qtbot, sesion, monkeypatch):
+    app = sesion()
+    usuarios.crear_usuario(app.conn, "admin.prueba", Rol.ADMIN, "clave-admin-segura")
+    kiosco = VentanaKiosco(app)
+    ventana = VentanaPrincipal(app, kiosco)
+    qtbot.addWidget(ventana)
+    qtbot.addWidget(kiosco)
+    ventana.show()
+    ventana.close()                                     # "X" o Alt+F4
+    assert ventana.isVisible() and "Salir" in ventana.statusBar().currentMessage()
+
+    claves = iter(["incorrecta", "clave-admin-segura"])
+
+    def ingreso(self):
+        self.campo_clave.setText(next(claves))
+        self.intentar()
+        return self.result()
+
+    monkeypatch.setattr(DialogoLogin, "exec", ingreso)
+    ventana.salir()                                     # contraseña incorrecta: sigue abierta
+    assert ventana.isVisible()
+    ventana.salir()
+    assert not ventana.isVisible() and not kiosco.isVisible()
+    eventos = [e["evento"] for e in repo.bitacora_completa(app.conn)]
+    assert eventos[-2:] == ["LOGIN_EXITOSO", "SALIDA_SISTEMA"] and "LOGIN_FALLIDO" in eventos
+
+
+def test_kiosco_tecla_cero_corrige(qtbot, sesion):
+    from votoseguro.servicios.votacion import SesionVoto
+
+    app = sesion()
+    from votoseguro.servicios import configuracion
+    from votoseguro.servicios.configuracion import Candidatura
+    creada = configuracion.crear_eleccion(app.ctx(), "Prueba de teclado", [Candidatura("A", "Ana")], bits=2048)
+    kiosco = VentanaKiosco(app)
+    qtbot.addWidget(kiosco)
+    kiosco.habilitar(SesionVoto(creada.eleccion_id, "1234567", "HUELLA"))
+    qtbot.keyClick(kiosco, Qt.Key.Key_1)
+    assert kiosco.pila.currentIndex() == 2 and "ENTER" in kiosco.findChild(type(kiosco.texto_eleccion), "teclas").text()
+    qtbot.keyClick(kiosco, Qt.Key.Key_0)
+    assert kiosco.pila.currentIndex() == 1 and kiosco.elegida is None

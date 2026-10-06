@@ -10,6 +10,7 @@ from votoseguro.ui.paginas.base import Pagina
 
 class PaginaInicio(Pagina):
     titulo = "Resumen de la mesa"
+    menu = "Resumen"
 
     def __init__(self, sesion_app, ventana):
         super().__init__(sesion_app, ventana)

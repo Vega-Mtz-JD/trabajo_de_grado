@@ -13,6 +13,7 @@ from votoseguro.ui.paginas.base import Pagina
 
 class PaginaUsuarios(Pagina):
     titulo = "Usuarios del personal"
+    menu = "Usuarios"
     roles = {Rol.ADMIN}
 
     def __init__(self, sesion_app, ventana):

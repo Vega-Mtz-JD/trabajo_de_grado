@@ -15,6 +15,7 @@ from votoseguro.ui.paginas.base import Pagina, elegir_carpeta, pedir_frase
 
 class PaginaEscrutinio(Pagina):
     titulo = "Escrutinio y exportación"
+    menu = "Escrutinio"
     roles = {Rol.ADMIN, Rol.OPERADOR}
     estados = {Estado.CERRADA, Estado.ESCRUTADA, Estado.EXPORTADA}
 
