@@ -51,8 +51,9 @@ def escrutar(ctx: Contexto, eleccion_id: str, partes: list[Parte | str]) -> acta
     conteo = Counter(c for _, c in boletas)
     contenido = {
         "eleccion_id": eleccion_id,
+        "eleccion_global": eleccion.eleccion_global,
         "eleccion": eleccion.nombre,
-        "mesa": ctx.mesa,
+        "mesa": eleccion.mesa,
         "resultados": {o.codigo: conteo.get(o.codigo, 0) for o in repo.opciones(ctx.conn, eleccion_id)},
         "total": len(boletas),
         "raiz_merkle": raiz,
@@ -67,7 +68,7 @@ def escrutar(ctx: Contexto, eleccion_id: str, partes: list[Parte | str]) -> acta
         bitacora.registrar(ctx.conn, ctx.actor, "ESCRUTINIO",
                            {"eleccion": eleccion_id, "hash_acta": acta.hash, "custodios": custodios})
         outbox.encolar(ctx.conn, "RegistrarEscrutinio", {
-            "eleccion_id": eleccion_id, "resultados": contenido["resultados"],
+            **eleccion.ancla, "resultados": contenido["resultados"],
             "total": len(boletas), "hash_acta": acta.hash,
         })
     actas.imprimir(ctx, eleccion_id, acta)

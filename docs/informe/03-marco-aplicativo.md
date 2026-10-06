@@ -61,6 +61,25 @@ Al cierre se verifica que el número de votos coincida con el de votantes marcad
 <!-- CAPTURA: acta de cierre (salida_demo/impresiones/07_acta_cierre.pdf) y un VVPAT. -->
 <!-- CAPTURA: tabla auditoria.bitacora en pgAdmin mostrando la cadena de hashes. -->
 
+#### Sprint 3: Varias urnas, fotografía y auditoría del padrón
+
+El tercer sprint incorporó los requerimientos de operación con varias urnas y de registro fotográfico. Una urna define la elección y exporta su definición en un archivo cifrado y firmado, que las demás urnas importan tras verificar la firma y comparar la huella del equipo creador con una hoja de control impresa. Cada urna instala su propia mesa con un par de claves independiente y con sus propios custodios, de modo que el escrutinio se realiza en cada mesa. El empadronamiento se efectúa en el mismo equipo de la urna, sin importar datos externos, e incluye la fotografía de registro y la plantilla de huella, ambas cifradas. Como las urnas no están conectadas entre sí, antes de la apertura cada una exporta un resumen firmado de su padrón y el sistema cruza los resúmenes para detectar personas empadronadas en más de una mesa, que el operador inhabilita dejando constancia del motivo.
+
+Durante la jornada, al identificarse, el votante es fotografiado en la mesa de identificación como evidencia de su asistencia; esta fotografía no se vincula con el voto. Al cierre, el acta registra el número de ausentes y de personas que se identificaron sin votar, y se imprime la lista de quienes no votaron. El paquete de auditoría incorpora el padrón con la participación, sin fotografías ni huellas, lo que permitió añadir al verificador tres comprobaciones sobre el padrón. Finalmente, se implementó la consolidación, que verifica el paquete de cada mesa, exige que todas pertenezcan a la misma definición, que estén presentes todas las mesas y que ninguna cédula haya votado en más de una, y suma los resultados.
+
+| Elemento del backlog | Resultado |
+|---|---|
+| Definición de elección exportable y firmada | Completado |
+| Instalación de mesa con clave y custodios propios | Completado |
+| Fotografía de registro y de presencia (simuladas) | Completado |
+| Cruce de padrones entre mesas | Completado |
+| Lista de votantes que no votaron | Completado |
+| Consolidación de resultados de varias mesas | Completado |
+| Pruebas automatizadas (96 pruebas, cobertura del 96 %) | Completado |
+
+<!-- CAPTURA: salida de `votoseguro demo --mesas 3` mostrando el cruce de padrones y el cómputo consolidado. -->
+<!-- CAPTURA: lista impresa de votantes que no votaron (salida_demo/mesa01/impresiones). -->
+
 ### 3.2.4. Pruebas y calidad de software
 
 ### 3.2.5. Resultados

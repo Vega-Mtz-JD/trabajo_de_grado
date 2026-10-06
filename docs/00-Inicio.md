@@ -14,6 +14,7 @@
 **Perfil** = Cap. I + II, 40–80 págs. **Final** = 90–150 págs. Exportar: `docs/exportar/exportar_word.sh [perfil]`.
 
 ## Diseño técnico
+- [[requerimientos/vision-del-sistema|📋 Visión del sistema y requerimientos (RF/RNF)]]
 - [[Guia-Obsidian|📘 Guía de Obsidian]] · [[propuesta_v5|Propuesta v5]] · [[decisiones/README|Decisiones (ADR)]] · [[historial/propuesta_v4|Propuesta v4 (histórico)]]
 
 ## Normativa
@@ -24,6 +25,7 @@
 - [[bitacora/sprint-0|Sprint 0]] — propuesta v5 y entorno
 - [[bitacora/sprint-1|Sprint 1]] — criptografía, PostgreSQL y bitácora (61 pruebas, 95 %)
 - [[bitacora/sprint-2|Sprint 2]] — proceso electoral completo, demo y auditoría triple (81 pruebas, 96 %)
+- [[bitacora/sprint-3|Sprint 3]] — varias urnas, foto, presencia, ausentes y consolidación (96 pruebas, 96 %)
 
 ## Formato (Art. 34–35)
 Carta · Arial 11 (10 en tablas/figuras) · interlineado 2 · márgenes 2.55 / 2.55 / **3 izq** / 2.55 · número de página arriba a la derecha · APA 7 · cada capítulo en hoja nueva.

@@ -11,6 +11,7 @@ from votoseguro.cripto.llavero import Llavero, cifrar_con_frase, descifrar_con_f
 from votoseguro.datos import repositorio as repo
 from votoseguro.datos.conexion import VotanteNoHabilitado
 from votoseguro.dominio.modelos import Estado, Rol
+from votoseguro.hardware.camara import CamaraSimulada
 from votoseguro.hardware.huella import LectorSimulado
 from votoseguro.hardware.impresora import ImpresoraMemoria
 from votoseguro.servicios import (
@@ -36,7 +37,8 @@ def llavero():
 
 @pytest.fixture
 def ctx(bd, llavero):
-    return Contexto(bd("vs_app", autocommit=True), llavero, LectorSimulado(), ImpresoraMemoria(), "operador1")
+    return Contexto(bd("vs_app", autocommit=True), llavero, LectorSimulado(), ImpresoraMemoria(), "operador1",
+                    CamaraSimulada())
 
 
 def preparar(ctx, votantes=12, checkpoint_cada=10):
@@ -49,6 +51,7 @@ def preparar(ctx, votantes=12, checkpoint_cada=10):
     cis = [str(5_000_000 + i) for i in range(votantes)]
     for ci in cis:
         ctx.lector.colocar_dedo(ci)
+        ctx.camara.colocar_persona(ci)
         empadronamiento.registrar_votante(ctx, eid, ci, "Nombre", "Apellido")
     empadronamiento.cerrar_padron(ctx, eid)
     apertura.abrir(ctx, eid)
@@ -57,6 +60,7 @@ def preparar(ctx, votantes=12, checkpoint_cada=10):
 
 def votar(ctx, eid, ci, opcion):
     ctx.lector.colocar_dedo(ci)
+    ctx.camara.colocar_persona(ci)
     return votacion.emitir(ctx, votacion.autenticar_huella(ctx, eid, ci), opcion)
 
 
@@ -74,7 +78,8 @@ def test_eleccion_completa_conforme(ctx, tmp_path):
     assert [c["conteo"] for c in repo.checkpoints(ctx.conn, eid)] == [10, 11]   # cada 10 + final
     tipos = [d.nombre_archivo for d in ctx.impresora.documentos]
     assert tipos.count("acta_zeresima") == tipos.count("acta_cierre") == tipos.count("acta_escrutinio") == 1
-    assert sum(t.startswith("parte_custodio") for t in tipos) == 5
+    assert sum(t.startswith("parte_mesa01_custodio") for t in tipos) == 5
+    assert tipos.count("ausentes_mesa01") == 1
 
     paquete = exportacion.exportar(ctx, eid, tmp_path, FRASE)
     informe = verificacion.verificar_paquete(paquete.ruta, FRASE, conteo_papel=dict(papel),
@@ -252,6 +257,14 @@ def test_bitacora_alterada_se_detecta(paquete):
     assert "Bitácora encadenada íntegra y contiene el hash del acta de cierre" in fallidos
 
 
+def test_padron_alterado_se_detecta(paquete):
+    def borrar_participacion(d):
+        d["padron.json"][0]["ya_voto"] = False   # ocultar que alguien votó
+    _reempacar(paquete, borrar_participacion, actualizar_manifiesto=True)
+    fallidos = _fallidos(verificacion.verificar_paquete(paquete, FRASE))
+    assert "Padrón: votantes marcados = votos en urna; ausentes = acta de cierre" in fallidos
+
+
 def test_conteo_de_papel_distinto(paquete):
     informe = verificacion.verificar_paquete(paquete, FRASE, conteo_papel={"A": 1, "B": 0})
     assert "Conteo manual de VVPAT = resultados digitales" in _fallidos(informe)
@@ -267,11 +280,23 @@ def test_huella_de_dispositivo_distinta(paquete):
 def test_demo_completa(bd, tmp_path):
     r = demo.ejecutar(bd("vs_app", autocommit=True), tmp_path, votantes=25, bits=2048, semilla=7,
                       avisar=lambda _m: None)
-    assert r.informe.conforme, r.informe.texto()
+    assert r.conforme, r.consolidado.texto()
     assert sum(r.resultados.values()) == r.eventos["votos"]
     assert r.eventos["excepciones_manuales"] >= 1 and r.eventos["doble_voto_rechazado"] == 1
-    assert (tmp_path / "impresiones" / "urna_vvpat.pdf").exists()
-    assert r.paquete.exists()
+    assert (tmp_path / "mesa01" / "impresiones" / "urna_vvpat.pdf").exists()
+    assert all(p.exists() for p in r.paquetes)
+
+
+def test_demo_varias_mesas_detecta_duplicado_y_consolida(bd, tmp_path):
+    r = demo.ejecutar(bd("vs_app", autocommit=True), tmp_path, votantes=30, mesas=3, bits=2048, semilla=5,
+                      avisar=lambda _m: None)
+    assert r.conforme, r.consolidado.texto()
+    assert len(r.cruce.duplicados) == 1 and r.eventos["duplicados_inhabilitados"] == 1
+    assert sorted(r.consolidado.informes_mesa) == ["01", "02", "03"]
+    assert sum(r.resultados.values()) == r.eventos["votos"]
+    papel = [c for i in r.consolidado.informes_mesa.values() for c in i.chequeos
+             if c.nombre == "Conteo manual de VVPAT = resultados digitales"]
+    assert len(papel) == 3 and all(c.ok for c in papel)
 
 
 def test_demo_es_reproducible_con_semilla(bd, tmp_path):

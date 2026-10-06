@@ -701,10 +701,11 @@ Puntos de función → SLOC (Python y Go) → esfuerzo y tiempo, más los costos
 | — | 1–2 | **Perfil de proyecto** para el tutor y carta de la empresa |
 | 1 | 2 | Núcleo criptográfico, BD y bitácora, con pruebas |
 | 2 | 2–3 | Servicios + CLI: elección completa simulada, acta, USB y verificador |
-| 3 | 3 | Red Fabric, chaincode, puente Go, outbox |
-| 4 | 3 | Interfaces PySide6 (kiosco, operador y auditor) |
-| 5 | 2 | Hardware real (ZKTeco, impresora), kiosco `cage`, hardening |
-| 6 | 2 | Pruebas, simulacro en [EMPRESA], SUS, FAR/FRR, ISO 25010, COCOMO II |
+| 3 | 2 | Varias urnas (definición exportable, padrón dividido, cruce de padrones, consolidación), foto de registro y de presencia, lista de ausentes (ADR-009) |
+| 4 | 3 | Red Fabric, chaincode, puente Go, envío del outbox |
+| 5 | 3 | Interfaces PySide6 (kiosco, operador y auditor) |
+| 6 | 2 | Hardware real (ZKTeco, impresora, cámara), kiosco `cage`, hardening |
+| 7 | 2 | Pruebas, simulacro en [EMPRESA], SUS, FAR/FRR, ISO 25010, COCOMO II |
 | — | 3–4 | Documento final y defensa |
 | **Total** | **≈ 20–24 semanas** | |
 

@@ -34,11 +34,16 @@ def test_version(capsys):
 
 def test_demo_y_verificar_por_cli(bd, tmp_path, capsys):
     dsn = bd.dsn + " user=vs_app"
-    assert cli.main(["--dsn", dsn, "demo", "--votantes", "12", "--bits", "2048",
+    assert cli.main(["--dsn", dsn, "demo", "--votantes", "12", "--mesas", "2", "--bits", "2048",
                      "--semilla", "3", "--salida", str(tmp_path)]) == 0
     salida = capsys.readouterr().out
-    assert "RESULTADO: CONFORME" in salida
-    paquete = next((tmp_path / "usb").glob("*.vsx"))
+    assert "RESULTADO CONSOLIDADO: CONFORME" in salida and "duplicados detectados: 1" in salida
+    paquetes = sorted(str(p) for p in (tmp_path / "usb").glob("*.vsx"))
+    assert len(paquetes) == 2
+    assert cli.main(["consolidar", *paquetes, "--frase", "demo-votoseguro-2026"]) == 0
+    assert cli.main(["consolidar", paquetes[0], "--frase", "demo-votoseguro-2026"]) == 1   # falta la mesa 02
+    assert "faltan: 02" in capsys.readouterr().out
+    paquete = paquetes[0]
     assert cli.main(["verificar", str(paquete), "--frase", "demo-votoseguro-2026"]) == 0
     assert cli.main(["verificar", str(paquete), "--frase", "demo-votoseguro-2026",
                      "--papel", "A=999"]) == 1

@@ -27,6 +27,7 @@ from votoseguro.cripto.hashing import canonico, hash_canonico, sha3
 from votoseguro.cripto.llavero import FraseIncorrecta, descifrar_con_frase, desde_b64
 from votoseguro.cripto.merkle import raiz_merkle
 from votoseguro.dominio.modelos import codigo_vvpat
+from votoseguro.servicios.apertura import compromiso_padron
 from votoseguro.servicios.exportacion import CONTEXTO_PAQUETE
 
 
@@ -41,6 +42,7 @@ class Chequeo:
 @dataclass
 class Informe:
     chequeos: list[Chequeo] = field(default_factory=list)
+    expediente: dict[str, Any] | None = field(default=None, repr=False)
 
     @property
     def conforme(self) -> bool:
@@ -126,6 +128,27 @@ def verificar_expediente(exp: dict[str, Any], informe: Informe, *,
                     and set(zeresima["votos_por_opcion"]) == set(codigos)
                     and not any(zeresima["votos_por_opcion"].values()))
 
+    # Definición de la elección (común a todas las mesas)
+    informe.agregar("USB", "Definición de la elección: hash = configuración registrada en la zerésima",
+                    hash_canonico(eleccion["definicion"]) == eleccion["hash_configuracion"]
+                    == zeresima["hash_configuracion"]
+                    and eleccion["mesa"] in eleccion["definicion"]["mesas"]
+                    and [o[0] for o in eleccion["definicion"]["opciones"]] == codigos)
+
+    # Padrón: compromiso, participación y presencia (RF09, ADR-009)
+    padron = exp["padron.json"]
+    habilitados = [v["ci"] for v in padron if v["habilitado"]]
+    votaron = [v for v in padron if v["ya_voto"]]
+    informe.agregar("USB", "Padrón = compromiso anclado en la zerésima",
+                    compromiso_padron(habilitados, eleccion["sal_padron"]) == zeresima["padron"]["compromiso"],
+                    f"{len(habilitados)} habilitados")
+    informe.agregar("USB", "Padrón: votantes marcados = votos en urna; ausentes = acta de cierre",
+                    len(votaron) == len(exp["votos.json"]) == cierre["votantes_que_votaron"]
+                    and len(habilitados) - len(votaron) == cierre["ausentes"],
+                    f"votaron {len(votaron)}, no votaron {len(habilitados) - len(votaron)}")
+    informe.agregar("USB", "Padrón: todo votante que votó registró presencia (foto en mesa)",
+                    all(v["presente"] for v in votaron))
+
     # Votos
     votos = exp["votos.json"]
     hashes = [v["hash"] for v in votos]
@@ -185,7 +208,9 @@ def verificar_expediente(exp: dict[str, Any], informe: Informe, *,
 
     # Ledger
     anclajes = [o for o in exp["outbox.json"]
-                if o["argumentos"].get("eleccion_id") == eid and o["funcion"] == "RegistrarCierre"]
+                if o["funcion"] == "RegistrarCierre"
+                and o["argumentos"].get("eleccion_global") == eleccion["eleccion_global"]
+                and o["argumentos"].get("mesa") == eleccion["mesa"]]
     informe.agregar("LEDGER", "Anclaje del cierre registrado para Fabric",
                     bool(anclajes) and anclajes[-1]["argumentos"]["raiz_merkle"] == cierre["raiz_merkle"])
     informe.agregar("LEDGER", "Comparación con el ledger de Hyperledger Fabric", None,
@@ -199,4 +224,5 @@ def verificar_paquete(ruta: Path, frase: str, *, conteo_papel: dict[str, int] | 
     expediente = abrir_paquete(ruta, frase, informe)
     if expediente is not None:
         verificar_expediente(expediente, informe, conteo_papel=conteo_papel, huella_esperada=huella_esperada)
+        informe.expediente = expediente
     return informe

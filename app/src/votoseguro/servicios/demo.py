@@ -1,8 +1,10 @@
 """Simulación de una elección completa con hardware simulado (``votoseguro demo``).
 
-Recorre todas las fases de la propuesta §13.1 con votantes sintéticos e incluye casos de
-borde: lecturas de huella fallidas, una excepción manual por huella ilegible, un intento de
-doble voto y abstención. Al final exporta el paquete y lo verifica (auditoría triple).
+Simula una o varias urnas (mesas), cada una como un equipo distinto con su propio llavero,
+custodios e impresora, compartiendo la base de datos de desarrollo. Recorre todas las fases e
+incluye casos de borde: un votante empadronado en dos mesas (lo detecta el cruce de padrones),
+lecturas de huella fallidas, una excepción manual por huella ilegible, un intento de doble voto y
+abstención. Al final verifica cada mesa (auditoría triple) y consolida los resultados.
 """
 
 import random
@@ -13,10 +15,11 @@ from pathlib import Path
 
 from votoseguro.cripto.llavero import Llavero
 from votoseguro.datos.conexion import VotanteNoHabilitado
+from votoseguro.hardware.camara import CamaraSimulada
 from votoseguro.hardware.huella import LectorSimulado
 from votoseguro.hardware.impresora import ImpresoraPDF
 from votoseguro.servicios import (
-    apertura, cierre, configuracion, empadronamiento, escrutinio, exportacion, verificacion, votacion,
+    apertura, cierre, configuracion, consolidacion, empadronamiento, escrutinio, exportacion, votacion,
 )
 from votoseguro.servicios.base import AutenticacionFallida, Contexto
 from votoseguro.servicios.configuracion import Candidatura
@@ -36,98 +39,151 @@ CANDIDATURAS = [
 
 
 @dataclass
+class Urna:
+    """Un equipo de votación simulado (una mesa)."""
+
+    mesa: str
+    ctx: Contexto
+    eleccion_id: str = ""
+    partes: list = field(default_factory=list)
+    padron: list[str] = field(default_factory=list)
+
+
+@dataclass
 class ResumenDemo:
-    eleccion_id: str
+    eleccion_global: str
     carpeta: Path
-    paquete: Path
-    resultados: dict[str, int]
-    informe: verificacion.Informe
-    huella_dispositivo: str
+    paquetes: list[Path]
+    consolidado: consolidacion.ResultadoConsolidacion
+    cruce: empadronamiento.ResultadoCruce
     eventos: Counter = field(default_factory=Counter)
     tiempos: dict[str, float] = field(default_factory=dict)
 
+    @property
+    def resultados(self) -> dict[str, int]:
+        return self.consolidado.total
 
-def ejecutar(conn, carpeta: Path, *, votantes: int = 100, bits: int = 3072, semilla: int | None = None,
-             avisar=print) -> ResumenDemo:
+    @property
+    def conforme(self) -> bool:
+        return self.consolidado.conforme
+
+
+def ejecutar(conn, carpeta: Path, *, votantes: int = 100, mesas: int = 1, bits: int = 3072,
+             semilla: int | None = None, avisar=print) -> ResumenDemo:
     # Solo simula el comportamiento de los votantes; no se usa para nada criptográfico.
     azar = random.Random(semilla)  # nosec B311
     carpeta = Path(carpeta)
-    llavero = Llavero.nuevo()
-    llavero.guardar(carpeta / "llavero.vsk", FRASE_DEMO)
-    lector = LectorSimulado(tasa_rechazo=0.15, azar=azar)
-    impresora = ImpresoraPDF(carpeta / "impresiones")
     eventos: Counter = Counter()
     tiempos: dict[str, float] = {}
+    codigos_mesa = [f"{i:02d}" for i in range(1, mesas + 1)]
 
-    def ctx(actor):
-        return Contexto(conn, llavero, lector, impresora, actor)
-
-    admin, operador, auditor = ctx("admin.demo"), ctx("operador.demo"), ctx("auditor.demo")
+    urnas = []
+    for mesa in codigos_mesa:
+        llavero = Llavero.nuevo()
+        llavero.guardar(carpeta / f"mesa{mesa}" / "llavero.vsk", FRASE_DEMO)
+        ctx = Contexto(conn, llavero, LectorSimulado(tasa_rechazo=0.15, azar=azar),
+                       ImpresoraPDF(carpeta / f"mesa{mesa}" / "impresiones"), f"operador.mesa{mesa}",
+                       CamaraSimulada())
+        urnas.append(Urna(mesa, ctx))
 
     t = time.perf_counter()
-    avisar("1/8 Configurando la elección y repartiendo la clave entre 5 custodios…")
-    creada = configuracion.crear_eleccion(
-        admin, "Elección de Directorio 2026 (DEMO)", CANDIDATURAS, bits=bits,
-        custodios=["Presidente del comité", "Delegado A", "Delegado B", "Auditor", "Representante empresa"])
-    eid = creada.eleccion_id
+    avisar(f"1/9 Definiendo la elección ({mesas} mesa/s) y exportando la definición firmada…")
+    definicion = configuracion.definir_eleccion("Elección de Directorio 2026 (DEMO)", CANDIDATURAS,
+                                                mesas=codigos_mesa)
+    ruta_def = carpeta / "usb" / "definicion.vsd"
+    configuracion.exportar_definicion(urnas[0].ctx, definicion, ruta_def, FRASE_DEMO)
+    huella_creadora = urnas[0].ctx.llavero.huella_dispositivo
+    for urna in urnas:
+        importada = configuracion.importar_definicion(ruta_def, FRASE_DEMO, huella_creadora)
+        creada = configuracion.instalar_mesa(urna.ctx, importada, urna.mesa, bits=bits, custodios=[
+            f"Presidente de mesa {urna.mesa}", "Jurado A", "Jurado B", "Delegado auditor", "Delegado empresa"])
+        urna.eleccion_id, urna.partes = creada.eleccion_id, creada.partes
     tiempos["configuracion"] = time.perf_counter() - t
 
     t = time.perf_counter()
-    avisar(f"2/8 Empadronando {votantes} votantes con huella…")
-    empadronamiento.iniciar(operador, eid)
-    padron = []
-    for i in range(votantes):
-        ci = str(4_000_000 + i * 37)
-        lector.colocar_dedo(ci)
-        lector.tasa_rechazo = 0.0          # al empadronar se repite hasta tener buena calidad
-        empadronamiento.registrar_votante(operador, eid, ci, azar.choice(_NOMBRES),
-                                          f"{azar.choice(_APELLIDOS)} {azar.choice(_APELLIDOS)}")
-        padron.append(ci)
-    lector.tasa_rechazo = 0.15
-    empadronamiento.cerrar_padron(operador, eid)
+    avisar(f"2/9 Empadronando {votantes} votantes en sus mesas (datos, foto y huella)…")
+    personas = [(str(4_000_000 + i * 37), azar.choice(_NOMBRES),
+                 f"{azar.choice(_APELLIDOS)} {azar.choice(_APELLIDOS)}") for i in range(votantes)]
+    for urna in urnas:
+        empadronamiento.iniciar(urna.ctx, urna.eleccion_id)
+    for i, persona in enumerate(personas):
+        _empadronar(urnas[i % mesas], *persona)
+    if mesas > 1:   # alguien se empadrona también en otra mesa (error o intento de fraude)
+        _empadronar(urnas[1], *personas[0])
     tiempos["empadronamiento"] = time.perf_counter() - t
 
-    avisar("3/8 Apertura: autodiagnóstico y zerésima…")
-    apertura.abrir(operador, eid)
+    avisar("3/9 Cruce de padrones entre mesas…")
+    resumenes = [empadronamiento.exportar_resumen_padron(u.ctx, u.eleccion_id, carpeta / "usb", FRASE_DEMO)
+                 for u in urnas]
+    cruce = empadronamiento.cruzar_padrones(resumenes, FRASE_DEMO)
+    for ci, mesas_ci in cruce.duplicados.items():
+        for urna in urnas:
+            if urna.mesa in mesas_ci[1:]:       # se conserva en la primera mesa
+                empadronamiento.inhabilitar_votante(urna.ctx, urna.eleccion_id, ci,
+                                                    f"Duplicado: también empadronado en mesa {mesas_ci[0]}")
+                urna.padron.remove(ci)
+                eventos["duplicados_inhabilitados"] += 1
+    for urna in urnas:
+        empadronamiento.cerrar_padron(urna.ctx, urna.eleccion_id)
+
+    avisar("4/9 Apertura de cada mesa: autodiagnóstico y zerésima…")
+    for urna in urnas:
+        apertura.abrir(urna.ctx, urna.eleccion_id)
 
     t = time.perf_counter()
-    avisar("4/8 Votación (con fallas de huella, una excepción manual, un doble voto y abstención)…")
-    ilegible = padron[3]
-    papel: Counter = Counter()
+    avisar("5/9 Votación (fallas de huella, excepción manual, doble voto, abstención)…")
     pesos = [0.38, 0.33, 0.19, 0.06, 0.04]  # A, B, C, BLANCO, NULO
     codigos = ["A", "B", "C", "BLANCO", "NULO"]
-    asistentes = [ci for ci in padron if azar.random() > 0.06]
-    for ci in asistentes:
-        lector.colocar_dedo(f"dedo-dañado-{ci}" if ci == ilegible else ci)
-        try:
-            sesion = votacion.autenticar_huella(operador, eid, ci)
-        except AutenticacionFallida:
-            # Huella ilegible forzada (1) y, por azar, alguna lectura fallida 3 veces seguidas
-            eventos["excepciones_manuales"] += 1
-            sesion = votacion.autorizar_excepcion(operador, eid, ci, "Huella ilegible; CI verificado en persona")
-        comprobante = votacion.emitir(operador, sesion, azar.choices(codigos, pesos)[0])
-        papel[comprobante.opcion.codigo] += 1   # el VVPAT cae en la urna física
-    try:
-        votacion.identificar(operador, eid, asistentes[0])
-    except VotanteNoHabilitado:
-        eventos["doble_voto_rechazado"] += 1
+    ilegible = urnas[0].padron[min(3, len(urnas[0].padron) - 1)]
+    papel: dict[str, Counter] = {u.mesa: Counter() for u in urnas}
+    for urna in urnas:
+        asistentes = [ci for ci in urna.padron if azar.random() > 0.06]
+        for ci in asistentes:
+            urna.ctx.camara.colocar_persona(ci)
+            urna.ctx.lector.colocar_dedo(f"dedo-dañado-{ci}" if ci == ilegible else ci)
+            try:
+                sesion = votacion.autenticar_huella(urna.ctx, urna.eleccion_id, ci)
+            except AutenticacionFallida:
+                # Huella ilegible forzada (1) y, por azar, alguna lectura fallida 3 veces seguidas
+                eventos["excepciones_manuales"] += 1
+                sesion = votacion.autorizar_excepcion(urna.ctx, urna.eleccion_id, ci,
+                                                      "Huella ilegible; CI y foto verificados en persona")
+            comprobante = votacion.emitir(urna.ctx, sesion, azar.choices(codigos, pesos)[0])
+            papel[urna.mesa][comprobante.opcion.codigo] += 1   # el VVPAT cae en la urna física
+        eventos["votos"] += len(asistentes)
+        eventos["abstencion"] += len(urna.padron) - len(asistentes)
+        if asistentes and urna is urnas[0]:
+            try:
+                votacion.identificar(urna.ctx, urna.eleccion_id, asistentes[0])
+            except VotanteNoHabilitado:
+                eventos["doble_voto_rechazado"] += 1
     tiempos["votacion"] = time.perf_counter() - t
-    eventos["votos"] = len(asistentes)
-    eventos["abstencion"] = votantes - len(asistentes)
 
-    avisar("5/8 Cierre: checkpoint final y acta de cierre…")
-    cierre.cerrar(operador, eid)
+    avisar("6/9 Cierre de cada mesa: acta de cierre y lista de ausentes…")
+    for urna in urnas:
+        cierre.cerrar(urna.ctx, urna.eleccion_id)
 
     t = time.perf_counter()
-    avisar("6/8 Escrutinio con 3 de 5 custodios (partes 1, 3 y 5)…")
-    acta = escrutinio.escrutar(auditor, eid, [p.a_texto() for p in creada.partes[0::2]])
+    avisar("7/9 Escrutinio en cada mesa con 3 de sus 5 custodios…")
+    for urna in urnas:
+        escrutinio.escrutar(urna.ctx, urna.eleccion_id, [p.a_texto() for p in urna.partes[0::2]])
     tiempos["escrutinio"] = time.perf_counter() - t
 
-    avisar("7/8 Exportando el paquete de auditoría cifrado (USB)…")
-    paquete = exportacion.exportar(operador, eid, carpeta / "usb", FRASE_DEMO)
+    avisar("8/9 Exportando el paquete de auditoría cifrado de cada mesa (USB)…")
+    paquetes = [exportacion.exportar(u.ctx, u.eleccion_id, carpeta / "usb", FRASE_DEMO).ruta for u in urnas]
 
-    avisar("8/8 Auditoría triple: papel + USB + ledger…")
-    informe = verificacion.verificar_paquete(paquete.ruta, FRASE_DEMO, conteo_papel=dict(papel),
-                                             huella_esperada=llavero.huella_dispositivo)
-    return ResumenDemo(eid, carpeta, paquete.ruta, acta.contenido["resultados"], informe,
-                       llavero.huella_dispositivo, eventos, tiempos)
+    avisar("9/9 Auditoría triple de cada mesa y consolidación…")
+    # El auditor ingresa, por mesa, el conteo manual de los VVPAT y la huella impresa en la zerésima.
+    consolidado = consolidacion.consolidar(
+        paquetes, FRASE_DEMO, conteos_papel={m: dict(c) for m, c in papel.items()},
+        huellas={u.mesa: u.ctx.llavero.huella_dispositivo for u in urnas})
+    return ResumenDemo(definicion.eleccion_global, carpeta, paquetes, consolidado, cruce, eventos, tiempos)
+
+
+def _empadronar(urna: Urna, ci: str, nombres: str, apellidos: str) -> None:
+    urna.ctx.camara.colocar_persona(ci)
+    urna.ctx.lector.colocar_dedo(ci)
+    urna.ctx.lector.tasa_rechazo = 0.0   # al empadronar se repite hasta tener buena calidad
+    empadronamiento.registrar_votante(urna.ctx, urna.eleccion_id, ci, nombres, apellidos)
+    urna.ctx.lector.tasa_rechazo = 0.15
+    urna.padron.append(ci)

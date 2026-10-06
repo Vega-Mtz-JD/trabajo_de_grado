@@ -23,24 +23,39 @@ def _demo(args) -> int:
     from votoseguro.servicios import demo
 
     with conectar(args.dsn, autocommit=True) as conn:
-        r = demo.ejecutar(conn, Path(args.salida), votantes=args.votantes, bits=args.bits,
-                          semilla=args.semilla)
+        r = demo.ejecutar(conn, Path(args.salida), votantes=args.votantes, mesas=args.mesas,
+                          bits=args.bits, semilla=args.semilla)
     print()
-    print(f"Elección: {r.eleccion_id}")
-    print("Resultados:")
-    total = sum(r.resultados.values())
-    for codigo, votos in r.resultados.items():
-        print(f"  {codigo:<8} {votos:>4}  {100 * votos / total:5.1f} %")
+    c = r.cruce
+    print(f"Cruce de padrones: {c.total_votantes} empadronados en {len(c.mesas)} mesa/s · "
+          f"duplicados detectados: {len(c.duplicados)} (inhabilitados: {r.eventos['duplicados_inhabilitados']})")
     print(f"Votos: {r.eventos['votos']} · abstención: {r.eventos['abstencion']} · "
           f"excepciones manuales: {r.eventos['excepciones_manuales']} · "
           f"doble voto rechazado: {r.eventos['doble_voto_rechazado']}")
     print("Tiempos: " + ", ".join(f"{k} {v:.1f} s" for k, v in r.tiempos.items()))
     print()
-    print(r.informe.texto())
+    for mesa, informe in sorted(r.consolidado.informes_mesa.items()):
+        print(f"── Auditoría triple · mesa {mesa} " + "─" * 40)
+        print(informe.texto())
+        print()
+    print(r.consolidado.texto())
     print()
-    print(f"Impresiones (zerésima, actas, partes, urna VVPAT): {r.carpeta / 'impresiones'}")
-    print(f"Paquete USB: {r.paquete}   (frase: {demo.FRASE_DEMO})")
-    return 0 if r.informe.conforme else 1
+    print(f"Impresiones por mesa: {r.carpeta}/mesaNN/impresiones")
+    print(f"USB (definición, resúmenes de padrón, paquetes): {r.carpeta / 'usb'}   (frase: {demo.FRASE_DEMO})")
+    return 0 if r.conforme else 1
+
+
+def _consolidar(args) -> int:
+    from votoseguro.servicios import consolidacion
+
+    r = consolidacion.consolidar([Path(p) for p in args.paquetes], args.frase)
+    for mesa, informe in sorted(r.informes_mesa.items()):
+        if not informe.conforme:
+            print(f"── Mesa {mesa} con discrepancias " + "─" * 30)
+            print(informe.texto())
+            print()
+    print(r.texto())
+    return 0 if r.conforme else 1
 
 
 def _verificar(args) -> int:
@@ -67,6 +82,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("demo", help="simula una elección completa con hardware simulado")
     p.add_argument("--votantes", type=int, default=100)
+    p.add_argument("--mesas", type=int, default=1, help="cantidad de urnas (mesas) a simular")
     p.add_argument("--salida", default="salida_demo", help="carpeta de impresiones y USB")
     p.add_argument("--bits", type=int, default=3072, help="tamaño de la clave RSA de la elección")
     p.add_argument("--semilla", type=int, help="semilla para reproducir la distribución de votos")
@@ -78,6 +94,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--papel", help="conteo manual de VVPAT, p. ej. A=37,B=30,C=18,BLANCO=5,NULO=4")
     p.add_argument("--huella", help="huella del dispositivo impresa en la zerésima")
     p.set_defaults(funcion=_verificar)
+
+    p = sub.add_parser("consolidar", help="verifica los paquetes de todas las mesas y suma los resultados")
+    p.add_argument("paquetes", nargs="+")
+    p.add_argument("--frase", required=True)
+    p.set_defaults(funcion=_consolidar)
 
     args = parser.parse_args(argv)
     return args.funcion(args)

@@ -7,10 +7,11 @@ import psycopg
 from votoseguro.cripto.llavero import Llavero
 from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Eleccion, Estado
+from votoseguro.hardware.camara import Camara
 from votoseguro.hardware.huella import LectorHuella
 from votoseguro.hardware.impresora import Impresora
 
-VERSION_SOFTWARE = "votoseguro-0.2.0"
+VERSION_SOFTWARE = "votoseguro-0.3.0"
 
 
 class ErrorServicio(Exception):
@@ -50,7 +51,17 @@ class Contexto:
     lector: LectorHuella
     impresora: Impresora
     actor: str
-    mesa: str = "01"
+    camara: Camara | None = None
+
+    def tomar_foto(self) -> bytes:
+        from votoseguro.hardware.camara import CamaraNoDisponible
+
+        if self.camara is None:
+            raise HardwareNoDisponible("no hay cámara configurada")
+        try:
+            return self.camara.capturar()
+        except CamaraNoDisponible as e:
+            raise HardwareNoDisponible(str(e)) from e
 
     def __post_init__(self):
         if not self.conn.autocommit:

@@ -35,9 +35,16 @@ $$;
 
 -- ===================================================================== Elección
 
+-- Una fila = una MESA de una elección (ADR-009). Varias urnas comparten eleccion_global y la
+-- definición (opciones, sal del padrón), pero cada mesa tiene su propia clave y custodios.
 CREATE TABLE eleccion.eleccion (
     id                    uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    eleccion_global       uuid NOT NULL,
+    mesa                  text NOT NULL CHECK (mesa ~ '^[A-Z0-9-]{1,10}$'),
     nombre                text NOT NULL CHECK (length(nombre) BETWEEN 3 AND 200),
+    sal_padron            text NOT NULL CHECK (sal_padron ~ '^[0-9a-f]{32}$'),
+    hash_configuracion    text NOT NULL CHECK (hash_configuracion ~ '^[0-9a-f]{64}$'),
+    definicion            jsonb NOT NULL,      -- definición completa (opciones, mesas, umbral…)
     estado                text NOT NULL DEFAULT 'CONFIGURACION'
                           CHECK (estado IN ('CONFIGURACION', 'EMPADRONAMIENTO', 'LISTA',
                                             'ABIERTA', 'CERRADA', 'ESCRUTADA', 'EXPORTADA')),
@@ -47,7 +54,8 @@ CREATE TABLE eleccion.eleccion (
     partes                smallint NOT NULL,
     checkpoint_cada       smallint NOT NULL DEFAULT 10 CHECK (checkpoint_cada >= 10),
     creada_en             timestamptz NOT NULL DEFAULT now(),
-    CHECK (umbral >= 2 AND umbral <= partes)
+    CHECK (umbral >= 2 AND umbral <= partes),
+    UNIQUE (eleccion_global, mesa)
 );
 
 -- Solo se permiten las transiciones de la máquina de estados (propuesta §10.2) y los
@@ -55,9 +63,11 @@ CREATE TABLE eleccion.eleccion (
 CREATE FUNCTION eleccion.validar_cambio() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
-    IF (NEW.id, NEW.clave_publica, NEW.clave_privada_cifrada, NEW.umbral, NEW.partes, NEW.creada_en)
+    IF (NEW.id, NEW.eleccion_global, NEW.mesa, NEW.sal_padron, NEW.hash_configuracion, NEW.definicion, NEW.clave_publica,
+        NEW.clave_privada_cifrada, NEW.umbral, NEW.partes, NEW.creada_en)
        IS DISTINCT FROM
-       (OLD.id, OLD.clave_publica, OLD.clave_privada_cifrada, OLD.umbral, OLD.partes, OLD.creada_en) THEN
+       (OLD.id, OLD.eleccion_global, OLD.mesa, OLD.sal_padron, OLD.hash_configuracion, OLD.definicion, OLD.clave_publica,
+        OLD.clave_privada_cifrada, OLD.umbral, OLD.partes, OLD.creada_en) THEN
         RAISE EXCEPTION 'los datos criptográficos de la elección son inmutables' USING ERRCODE = 'VS100';
     END IF;
     IF NEW.estado IS DISTINCT FROM OLD.estado AND (OLD.estado, NEW.estado) NOT IN (
@@ -121,6 +131,7 @@ CREATE TABLE padron.votante (
     nombres           text NOT NULL,
     apellidos         text NOT NULL,
     plantilla_cifrada bytea,
+    foto_cifrada      bytea,                            -- foto de registro (ADR-009)
     habilitado        boolean NOT NULL DEFAULT true,
     ya_voto           boolean NOT NULL DEFAULT false,   -- sin hora de voto (ADR-004)
     PRIMARY KEY (eleccion_id, ci)
@@ -160,6 +171,37 @@ $$;
 CREATE TRIGGER votante_validar BEFORE INSERT OR UPDATE ON padron.votante
     FOR EACH ROW EXECUTE FUNCTION padron.validar_votante();
 CREATE TRIGGER votante_sin_borrado BEFORE DELETE ON padron.votante
+    FOR EACH ROW EXECUTE FUNCTION auditoria.prohibir_modificacion();
+
+-- Presencia: el votante se identificó en la jornada (foto de presencia, método). Es información
+-- de la mesa de identificación (como firmar la lista de votantes); NO se vincula al voto.
+CREATE TABLE padron.presencia (
+    eleccion_id  uuid NOT NULL,
+    ci           text NOT NULL,
+    momento      timestamptz NOT NULL DEFAULT now(),
+    metodo       text NOT NULL CHECK (metodo IN ('HUELLA', 'EXCEPCION')),
+    foto_cifrada bytea,
+    PRIMARY KEY (eleccion_id, ci),
+    FOREIGN KEY (eleccion_id, ci) REFERENCES padron.votante (eleccion_id, ci)
+);
+
+CREATE FUNCTION padron.validar_presencia() RETURNS trigger
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF (SELECT estado FROM eleccion.eleccion WHERE id = NEW.eleccion_id) IS DISTINCT FROM 'ABIERTA' THEN
+        RAISE EXCEPTION 'la elección no está abierta' USING ERRCODE = 'VS002';
+    END IF;
+    IF NOT EXISTS (SELECT FROM padron.votante
+                    WHERE eleccion_id = NEW.eleccion_id AND ci = NEW.ci AND habilitado) THEN
+        RAISE EXCEPTION 'votante no habilitado' USING ERRCODE = 'VS001';
+    END IF;
+    RETURN NEW;
+END
+$$;
+
+CREATE TRIGGER presencia_validar BEFORE INSERT ON padron.presencia
+    FOR EACH ROW EXECUTE FUNCTION padron.validar_presencia();
+CREATE TRIGGER presencia_solo_insercion BEFORE UPDATE OR DELETE ON padron.presencia
     FOR EACH ROW EXECUTE FUNCTION auditoria.prohibir_modificacion();
 
 -- ===================================================================== Urna
@@ -321,7 +363,8 @@ GRANT SELECT, INSERT ON eleccion.usuario TO vs_app;
 GRANT UPDATE (hash_password, clave_publica, activo) ON eleccion.usuario TO vs_app;
 GRANT USAGE ON SEQUENCE eleccion.opcion_id_seq TO vs_app;
 GRANT SELECT, INSERT ON padron.votante TO vs_app;
-GRANT UPDATE (nombres, apellidos, plantilla_cifrada, habilitado) ON padron.votante TO vs_app;
+GRANT UPDATE (nombres, apellidos, plantilla_cifrada, foto_cifrada, habilitado) ON padron.votante TO vs_app;
+GRANT SELECT, INSERT ON padron.presencia TO vs_app;
 GRANT SELECT ON urna.voto TO vs_app;                     -- sin INSERT directo: usa emitir_voto()
 GRANT EXECUTE ON FUNCTION urna.emitir_voto(uuid, text, bytea, text), urna.mezclar(),
                           urna.huella_urna() TO vs_app;
@@ -334,4 +377,5 @@ GRANT SELECT ON ALL TABLES IN SCHEMA eleccion, urna, auditoria, blockchain TO vs
 REVOKE SELECT ON eleccion.usuario FROM vs_auditor;
 GRANT SELECT (nombre, rol, clave_publica, activo) ON eleccion.usuario TO vs_auditor;
 GRANT SELECT (eleccion_id, ci, nombres, apellidos, habilitado, ya_voto) ON padron.votante TO vs_auditor;
+GRANT SELECT (eleccion_id, ci, momento, metodo) ON padron.presencia TO vs_auditor;
 GRANT EXECUTE ON FUNCTION urna.huella_urna() TO vs_auditor;

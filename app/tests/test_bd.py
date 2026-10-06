@@ -25,8 +25,10 @@ ESTADOS_HASTA_ABIERTA = ["EMPADRONAMIENTO", "LISTA", "ABIERTA"]
 def crear_eleccion(conn, votantes=5, clave_publica=b"pub", checkpoint_cada=10) -> str:
     """Crea una elección con opciones y padrón, todavía en EMPADRONAMIENTO."""
     eid = conn.execute(
-        """INSERT INTO eleccion.eleccion (nombre, clave_publica, clave_privada_cifrada, umbral, partes, checkpoint_cada)
-           VALUES ('Directorio 2026', %s, %s, 3, 5, %s) RETURNING id::text""",
+        """INSERT INTO eleccion.eleccion (eleccion_global, mesa, nombre, sal_padron, hash_configuracion, definicion,
+                                          clave_publica, clave_privada_cifrada, umbral, partes, checkpoint_cada)
+           VALUES (gen_random_uuid(), '01', 'Directorio 2026', repeat('ab', 16), repeat('c', 64), '{}',
+                   %s, %s, 3, 5, %s) RETURNING id::text""",
         (clave_publica, b"cifrada", checkpoint_cada),
     ).fetchone()[0]
     for orden, (codigo, tipo) in enumerate([("A", "CANDIDATO"), ("B", "CANDIDATO"), ("BLANCO", "BLANCO")], 1):

@@ -62,7 +62,7 @@ def autenticar_huella(ctx: Contexto, eleccion_id: str, ci: str) -> SesionVoto:
     """Compara 1:1 la huella viva con la registrada. Hasta ``MAX_INTENTOS`` capturas."""
     identificar(ctx, eleccion_id, ci)
     votante = repo.obtener_votante(ctx.conn, eleccion_id, ci)
-    registrada = ctx.llavero.descifrar_plantilla(eleccion_id, ci, bytes(votante["plantilla_cifrada"]))
+    registrada = ctx.llavero.descifrar_personal("plantilla", eleccion_id, ci, bytes(votante["plantilla_cifrada"]))
     for intento in range(1, MAX_INTENTOS + 1):
         try:
             viva = ctx.lector.capturar()
@@ -71,6 +71,7 @@ def autenticar_huella(ctx: Contexto, eleccion_id: str, ci: str) -> SesionVoto:
         if ctx.lector.coincide(registrada, viva):
             bitacora.registrar(ctx.conn, ctx.actor, "VOTANTE_AUTENTICADO",
                                {"eleccion": eleccion_id, "ci": ci, "metodo": "HUELLA", "intento": intento})
+            _registrar_presencia(ctx, eleccion_id, ci, "HUELLA")
             return SesionVoto(eleccion_id, ci, "HUELLA")
         bitacora.registrar(ctx.conn, ctx.actor, "AUTENTICACION_FALLIDA",
                            {"eleccion": eleccion_id, "ci": ci, "intento": intento})
@@ -87,7 +88,27 @@ def autorizar_excepcion(ctx: Contexto, eleccion_id: str, ci: str, motivo: str) -
     identificar(ctx, eleccion_id, ci)
     bitacora.registrar(ctx.conn, ctx.actor, "EXCEPCION_MANUAL",
                        {"eleccion": eleccion_id, "ci": ci, "motivo": motivo.strip()})
+    _registrar_presencia(ctx, eleccion_id, ci, "EXCEPCION")
     return SesionVoto(eleccion_id, ci, "EXCEPCION")
+
+
+def foto_registro(ctx: Contexto, eleccion_id: str, ci: str) -> bytes | None:
+    """Foto de registro del votante, para que el operador la compare con la persona presente."""
+    votante = repo.obtener_votante(ctx.conn, eleccion_id, ci)
+    if votante is None or votante["foto_cifrada"] is None:
+        return None
+    return ctx.llavero.descifrar_personal("foto_registro", eleccion_id, ci, bytes(votante["foto_cifrada"]))
+
+
+def _registrar_presencia(ctx: Contexto, eleccion_id: str, ci: str, metodo: str) -> None:
+    """Foto de presencia en la mesa de identificación (ADR-009). Se guarda la primera
+    identificación del día; si el votante vuelve a identificarse, se conserva la primera."""
+    foto = ctx.tomar_foto()
+    cifrada = ctx.llavero.cifrar_personal("foto_presencia", eleccion_id, ci, foto)
+    with ctx.conn.transaction():
+        if repo.registrar_presencia(ctx.conn, eleccion_id, ci, metodo, cifrada):
+            bitacora.registrar(ctx.conn, ctx.actor, "PRESENCIA_REGISTRADA",
+                               {"eleccion": eleccion_id, "ci": ci, "metodo": metodo})
 
 
 def emitir(ctx: Contexto, sesion: SesionVoto, codigo_opcion: str) -> Comprobante:
@@ -111,7 +132,7 @@ def emitir(ctx: Contexto, sesion: SesionVoto, codigo_opcion: str) -> Comprobante
         bitacora.registrar(ctx.conn, ctx.actor, "VOTO_EMITIDO", {"eleccion": eleccion.id, "n": total})
     sesion.usada = True
 
-    comprobante = Comprobante(eleccion.nombre, ctx.mesa, opcion, codigo_vvpat(hash_voto))
+    comprobante = Comprobante(eleccion.nombre, eleccion.mesa, opcion, codigo_vvpat(hash_voto))
     if total % eleccion.checkpoint_cada == 0:
         checkpoint(ctx, eleccion.id)
     try:
@@ -130,6 +151,7 @@ def reimprimir(ctx: Contexto, comprobante: Comprobante) -> None:
 
 def checkpoint(ctx: Contexto, eleccion_id: str) -> dict:
     """Mezcla la urna, calcula la raíz de Merkle y la deja anclada (BD + bitácora + outbox)."""
+    eleccion = repo.obtener_eleccion(ctx.conn, eleccion_id)
     with ctx.conn.transaction():
         urna.mezclar(ctx.conn)
         hashes = urna.hashes_votos(ctx.conn, eleccion_id)
@@ -138,5 +160,5 @@ def checkpoint(ctx: Contexto, eleccion_id: str) -> dict:
         datos = {"seq": seq, "conteo": len(hashes), "raiz_merkle": raiz_merkle(hashes)}
         repo.insertar_checkpoint(ctx.conn, eleccion_id, seq, datos["conteo"], datos["raiz_merkle"])
         bitacora.registrar(ctx.conn, "sistema", "CHECKPOINT", {"eleccion": eleccion_id, **datos})
-        outbox.encolar(ctx.conn, "RegistrarCheckpoint", {"eleccion_id": eleccion_id, **datos})
+        outbox.encolar(ctx.conn, "RegistrarCheckpoint", {**eleccion.ancla, **datos})
     return datos

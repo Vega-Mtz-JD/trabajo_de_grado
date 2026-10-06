@@ -20,12 +20,17 @@ def _ejecutar(conn: psycopg.Connection, sql: str, params: tuple | dict = ()):
 
 # --- Elección --------------------------------------------------------------------------------
 
-def crear_eleccion(conn, nombre: str, clave_publica_pem: bytes, clave_privada_cifrada: bytes,
-                   umbral: int, partes: int, checkpoint_cada: int) -> str:
+def crear_eleccion(conn, definicion, mesa: str, clave_publica_pem: bytes, clave_privada_cifrada: bytes,
+                   hash_configuracion: str) -> str:
+    """Instala en este equipo la mesa ``mesa`` de la elección definida en ``definicion``."""
     return _ejecutar(conn, """
-        INSERT INTO eleccion.eleccion (nombre, clave_publica, clave_privada_cifrada, umbral, partes, checkpoint_cada)
-        VALUES (%s, %s, %s, %s, %s, %s) RETURNING id::text""",
-        (nombre, clave_publica_pem, clave_privada_cifrada, umbral, partes, checkpoint_cada)).fetchone()[0]
+        INSERT INTO eleccion.eleccion (eleccion_global, mesa, nombre, sal_padron, hash_configuracion, definicion,
+                                       clave_publica, clave_privada_cifrada, umbral, partes, checkpoint_cada)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id::text""",
+        (definicion.eleccion_global, mesa, definicion.nombre, definicion.sal_padron, hash_configuracion,
+         Jsonb(definicion.a_dict()),
+         clave_publica_pem, clave_privada_cifrada, definicion.umbral, definicion.partes,
+         definicion.checkpoint_cada)).fetchone()[0]
 
 
 def insertar_opcion(conn, eleccion_id: str, opcion: Opcion) -> None:
@@ -37,11 +42,16 @@ def insertar_opcion(conn, eleccion_id: str, opcion: Opcion) -> None:
 
 def obtener_eleccion(conn, eleccion_id: str) -> Eleccion:
     fila = _ejecutar(conn, """
-        SELECT id::text, nombre, estado, clave_publica, umbral, partes, checkpoint_cada
+        SELECT id::text, nombre, estado, clave_publica, umbral, partes, checkpoint_cada,
+               eleccion_global::text, mesa, sal_padron, hash_configuracion
           FROM eleccion.eleccion WHERE id = %s""", (eleccion_id,)).fetchone()
     if fila is None:
         raise LookupError(f"no existe la elección {eleccion_id}")
-    return Eleccion(fila[0], fila[1], Estado(fila[2]), bytes(fila[3]), fila[4], fila[5], fila[6])
+    return Eleccion(fila[0], fila[1], Estado(fila[2]), bytes(fila[3]), *fila[4:])
+
+
+def definicion(conn, eleccion_id: str) -> dict[str, Any]:
+    return _ejecutar(conn, "SELECT definicion FROM eleccion.eleccion WHERE id = %s", (eleccion_id,)).fetchone()[0]
 
 
 def clave_privada_cifrada(conn, eleccion_id: str) -> bytes:
@@ -63,16 +73,41 @@ def cambiar_estado(conn, eleccion_id: str, nuevo: Estado) -> None:
 # --- Padrón ----------------------------------------------------------------------------------
 
 def insertar_votante(conn, eleccion_id: str, ci: str, nombres: str, apellidos: str,
-                     plantilla_cifrada: bytes | None) -> None:
+                     plantilla_cifrada: bytes | None, foto_cifrada: bytes | None) -> None:
     _ejecutar(conn, """
-        INSERT INTO padron.votante (eleccion_id, ci, nombres, apellidos, plantilla_cifrada)
-        VALUES (%s, %s, %s, %s, %s)""", (eleccion_id, ci, nombres, apellidos, plantilla_cifrada))
+        INSERT INTO padron.votante (eleccion_id, ci, nombres, apellidos, plantilla_cifrada, foto_cifrada)
+        VALUES (%s, %s, %s, %s, %s, %s)""", (eleccion_id, ci, nombres, apellidos, plantilla_cifrada, foto_cifrada))
+
+
+def inhabilitar_votante(conn, eleccion_id: str, ci: str) -> bool:
+    return _ejecutar(conn, """
+        UPDATE padron.votante SET habilitado = false WHERE eleccion_id = %s AND ci = %s AND habilitado""",
+        (eleccion_id, ci)).rowcount == 1
+
+
+def registrar_presencia(conn, eleccion_id: str, ci: str, metodo: str, foto_cifrada: bytes | None) -> bool:
+    """Registra la primera identificación del votante en la jornada. Devuelve False si ya existía."""
+    return _ejecutar(conn, """
+        INSERT INTO padron.presencia (eleccion_id, ci, metodo, foto_cifrada) VALUES (%s, %s, %s, %s)
+        ON CONFLICT (eleccion_id, ci) DO NOTHING""", (eleccion_id, ci, metodo, foto_cifrada)).rowcount == 1
+
+
+def padron_completo(conn, eleccion_id: str) -> list[dict[str, Any]]:
+    """Padrón con participación (sin plantillas ni fotos), ordenado por CI."""
+    with conn.cursor(row_factory=dict_row) as cur:
+        cur.execute("""
+            SELECT v.ci, v.nombres, v.apellidos, v.habilitado, v.ya_voto,
+                   p.ci IS NOT NULL AS presente, p.metodo
+              FROM padron.votante v
+              LEFT JOIN padron.presencia p USING (eleccion_id, ci)
+             WHERE v.eleccion_id = %s ORDER BY v.ci""", (eleccion_id,))
+        return cur.fetchall()
 
 
 def obtener_votante(conn, eleccion_id: str, ci: str) -> dict[str, Any] | None:
     with conn.cursor(row_factory=dict_row) as cur:
         cur.execute("""
-            SELECT ci, nombres, apellidos, plantilla_cifrada, habilitado, ya_voto
+            SELECT ci, nombres, apellidos, plantilla_cifrada, foto_cifrada, habilitado, ya_voto
               FROM padron.votante WHERE eleccion_id = %s AND ci = %s""", (eleccion_id, ci))
         return cur.fetchone()
 

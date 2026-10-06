@@ -37,13 +37,18 @@ def reunir_expediente(conn, eleccion_id: str, clave_publica_dispositivo_pem: byt
     eleccion = repo.obtener_eleccion(conn, eleccion_id)
     return {
         "eleccion.json": {
-            "id": eleccion.id, "nombre": eleccion.nombre, "estado": eleccion.estado.value,
+            "id": eleccion.id, "eleccion_global": eleccion.eleccion_global, "mesa": eleccion.mesa,
+            "hash_configuracion": eleccion.hash_configuracion, "sal_padron": eleccion.sal_padron,
+            "definicion": repo.definicion(conn, eleccion_id),
+            "nombre": eleccion.nombre, "estado": eleccion.estado.value,
             "umbral": eleccion.umbral, "partes": eleccion.partes, "checkpoint_cada": eleccion.checkpoint_cada,
             "clave_publica_pem": eleccion.clave_publica_pem.decode(),
             "opciones": [{"codigo": o.codigo, "nombre": o.nombre, "tipo": o.tipo.value, "orden": o.orden}
                          for o in repo.opciones(conn, eleccion_id)],
         },
         "votos.json": [{"hash": h, "cifrado": b64(c)} for c, h in repo.votos(conn, eleccion_id)],
+        # Padrón con participación, sin fotos ni huellas: permite auditar quién votó y quién no.
+        "padron.json": repo.padron_completo(conn, eleccion_id),
         "actas.json": {t: {"contenido": a["contenido"], "hash": a["hash"], "firma": b64(a["firma"])}
                        for t, a in repo.actas(conn, eleccion_id).items()},
         "checkpoints.json": repo.checkpoints(conn, eleccion_id),
@@ -67,7 +72,7 @@ def _zip(archivos: dict[str, bytes]) -> bytes:
 
 
 def exportar(ctx: Contexto, eleccion_id: str, carpeta: Path, frase: str) -> PaqueteExportado:
-    exigir_estado(ctx, eleccion_id, Estado.ESCRUTADA)
+    eleccion = exigir_estado(ctx, eleccion_id, Estado.ESCRUTADA)
     publica_pem = ctx.llavero.clave_firma.public_key().public_bytes(
         serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo)
     archivos = {n: canonico(c) for n, c in reunir_expediente(ctx.conn, eleccion_id, publica_pem).items()}
@@ -83,13 +88,12 @@ def exportar(ctx: Contexto, eleccion_id: str, carpeta: Path, frase: str) -> Paqu
 
     carpeta = Path(carpeta)
     carpeta.mkdir(parents=True, exist_ok=True)
-    ruta = carpeta / f"votoseguro_{eleccion_id[:8]}.vsx"
+    ruta = carpeta / f"votoseguro_{eleccion.eleccion_global[:8]}_mesa{eleccion.mesa}.vsx"
     ruta.write_bytes(cifrar_con_frase(_zip(archivos), frase, CONTEXTO_PAQUETE))
 
     with ctx.conn.transaction():
         repo.cambiar_estado(ctx.conn, eleccion_id, Estado.EXPORTADA)
         bitacora.registrar(ctx.conn, ctx.actor, "EXPORTACION",
                            {"eleccion": eleccion_id, "hash_manifiesto": hash_manifiesto})
-        outbox.encolar(ctx.conn, "RegistrarExportacion",
-                       {"eleccion_id": eleccion_id, "hash_manifiesto": hash_manifiesto})
+        outbox.encolar(ctx.conn, "RegistrarExportacion", {**eleccion.ancla, "hash_manifiesto": hash_manifiesto})
     return PaqueteExportado(ruta, hash_manifiesto)

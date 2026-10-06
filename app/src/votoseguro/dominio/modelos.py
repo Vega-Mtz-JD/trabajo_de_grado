@@ -48,7 +48,40 @@ class Opcion:
 
 
 @dataclass(frozen=True)
+class Definicion:
+    """Definición de una elección, común a todas sus mesas (ADR-009). No contiene datos personales.
+
+    ``sal_padron`` es secreta (no va al ledger): permite comparar CI entre mesas mediante hashes.
+    """
+
+    eleccion_global: str
+    nombre: str
+    opciones: tuple[Opcion, ...]
+    mesas: tuple[str, ...]
+    umbral: int
+    partes: int
+    checkpoint_cada: int
+    sal_padron: str
+
+    def a_dict(self) -> dict:
+        return {
+            "eleccion_global": self.eleccion_global, "nombre": self.nombre,
+            "opciones": [[o.codigo, o.nombre, o.tipo.value, o.orden, o.frente] for o in self.opciones],
+            "mesas": list(self.mesas), "umbral": self.umbral, "partes": self.partes,
+            "checkpoint_cada": self.checkpoint_cada, "sal_padron": self.sal_padron,
+        }
+
+    @classmethod
+    def desde_dict(cls, d: dict) -> "Definicion":
+        return cls(d["eleccion_global"], d["nombre"],
+                   tuple(Opcion(c, n, TipoOpcion(t), o, f) for c, n, t, o, f in d["opciones"]),
+                   tuple(d["mesas"]), d["umbral"], d["partes"], d["checkpoint_cada"], d["sal_padron"])
+
+
+@dataclass(frozen=True)
 class Eleccion:
+    """Una mesa de una elección, tal como está instalada en este equipo."""
+
     id: str
     nombre: str
     estado: Estado
@@ -56,6 +89,15 @@ class Eleccion:
     umbral: int
     partes: int
     checkpoint_cada: int
+    eleccion_global: str = ""
+    mesa: str = "01"
+    sal_padron: str = ""
+    hash_configuracion: str = ""
+
+    @property
+    def ancla(self) -> dict:
+        """Identificación de la mesa en el ledger (sin datos personales)."""
+        return {"eleccion_global": self.eleccion_global, "mesa": self.mesa}
 
 
 @dataclass(frozen=True)

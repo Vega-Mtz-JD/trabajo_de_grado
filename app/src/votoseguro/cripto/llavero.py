@@ -3,7 +3,8 @@
 El llavero guarda los secretos propios del equipo de votación:
   * la clave de firma del dispositivo (RSA-2048), con la que se firman zerésima, actas y
     el manifiesto del USB;
-  * la clave AES-256 que cifra las plantillas biométricas del padrón.
+  * la clave AES-256 que cifra los datos personales sensibles del padrón: plantillas de huella
+    y fotos (de registro y de presencia).
 
 Se almacena cifrado con una frase de paso que custodia el operador/administrador. La clave se
 deriva con Argon2id (resistente a ataques con GPU). Si el equipo tiene TPM 2.0, en el
@@ -56,7 +57,7 @@ def descifrar_con_frase(blob: bytes, frase: str, contexto: bytes) -> bytes:
 @dataclass
 class Llavero:
     clave_firma: rsa.RSAPrivateKey
-    clave_plantillas: bytes
+    clave_datos: bytes
 
     @classmethod
     def nuevo(cls) -> "Llavero":
@@ -71,7 +72,7 @@ class Llavero:
             "clave_firma": self.clave_firma.private_bytes(
                 serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
                 serialization.NoEncryption()).decode(),
-            "clave_plantillas": self.clave_plantillas.hex(),
+            "clave_datos": self.clave_datos.hex(),
         }).encode()
         ruta.parent.mkdir(parents=True, exist_ok=True)
         ruta.write_bytes(cifrar_con_frase(contenido, frase, b"votoseguro:llavero"))
@@ -83,21 +84,21 @@ class Llavero:
         clave = serialization.load_pem_private_key(datos["clave_firma"].encode(), password=None)
         if not isinstance(clave, rsa.RSAPrivateKey):
             raise FraseIncorrecta("llavero inválido")
-        return cls(clave, bytes.fromhex(datos["clave_plantillas"]))
+        return cls(clave, bytes.fromhex(datos["clave_datos"]))
 
-    # --- Plantillas biométricas -----------------------------------------------------------
+    # --- Datos personales sensibles (plantillas de huella y fotos) ----------------------------
 
-    def cifrar_plantilla(self, eleccion_id: str, ci: str, plantilla: bytes) -> bytes:
+    def cifrar_personal(self, tipo: str, eleccion_id: str, ci: str, datos: bytes) -> bytes:
+        """Cifra un dato personal. El tipo, la elección y el CI van como AAD: un dato no puede
+        copiarse a otro votante ni usarse como otro tipo sin que se detecte."""
         nonce = os.urandom(12)
-        aad = f"plantilla:{eleccion_id}:{ci}".encode()
-        return nonce + AESGCM(self.clave_plantillas).encrypt(nonce, plantilla, aad)
+        return nonce + AESGCM(self.clave_datos).encrypt(nonce, datos, f"{tipo}:{eleccion_id}:{ci}".encode())
 
-    def descifrar_plantilla(self, eleccion_id: str, ci: str, blob: bytes) -> bytes:
-        aad = f"plantilla:{eleccion_id}:{ci}".encode()
+    def descifrar_personal(self, tipo: str, eleccion_id: str, ci: str, blob: bytes) -> bytes:
         try:
-            return AESGCM(self.clave_plantillas).decrypt(blob[:12], blob[12:], aad)
+            return AESGCM(self.clave_datos).decrypt(blob[:12], blob[12:], f"{tipo}:{eleccion_id}:{ci}".encode())
         except InvalidTag as e:
-            raise FraseIncorrecta("plantilla alterada o de otro votante") from e
+            raise FraseIncorrecta(f"{tipo} alterado(a) o de otro votante") from e
 
 
 def b64(datos: bytes) -> str:
