@@ -11,7 +11,7 @@
 - [[informe/05-conclusiones|Cap. V — Conclusiones y referencias]]
 - [[informe/06-anexos|Anexos]]
 
-**Perfil** = Cap. I + II, 40–80 págs. **Final** = 90–150 págs. Exportar: `docs/exportar/exportar_word.sh [perfil]`.
+**Perfil** = Cap. I + II, 40–80 págs. → [[bitacora/perfil-v1|borrador v1 (estado y pendientes)]]. **Final** = 90–150 págs. Exportar: `docs/exportar/exportar_word.sh [perfil]`.
 
 ## Diseño técnico
 - [[requerimientos/vision-del-sistema|📋 Visión del sistema y requerimientos (RF/RNF)]]
