@@ -47,3 +47,6 @@ docs/exportar/plantilla_upea.docx
 salida_demo/
 blockchain/bridge/puente.log
 blockchain/bridge/puente.pid
+
+# Salidas de la interfaz (impresiones simuladas: partes de custodios, actas, VVPAT)
+salida_ui/

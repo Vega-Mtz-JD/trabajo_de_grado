@@ -31,6 +31,15 @@ scripts/      Instalación, hardening y kiosco
 - [Guía de Obsidian del proyecto](docs/Guia-Obsidian.md)
 - [Contexto para Claude Code](CLAUDE.md)
 
+## Uso rápido
+
+```bash
+cd app && . .venv/bin/activate
+export VOTOSEGURO_DSN='dbname=votoseguro'
+votoseguro-ui                    # panel de mesa + kiosco (hardware simulado)
+votoseguro demo --mesas 3        # simulación completa por línea de comandos
+```
+
 ## Desarrollo
 
 ```bash

@@ -98,6 +98,27 @@ La aplicación se comunica con la red mediante un servicio puente escrito en Go 
 <!-- CAPTURA: salida de `votoseguro ledger <eleccion> 01` con el historial de transacciones. -->
 <!-- CAPTURA: `docker ps` mostrando orderer, peer0 y acta en ejecución. -->
 
+#### Sprint 5: Interfaces gráficas
+
+El quinto sprint construyó las interfaces de uso del sistema con la biblioteca PySide6. La aplicación presenta dos ventanas: el panel de mesa, que utiliza el personal, y el kiosco, que utiliza el votante en la cabina. El panel solicita el ingreso del personal con usuario y contraseña, bloquea el acceso durante cinco minutos tras tres intentos fallidos y registra cada intento en la bitácora. Sus páginas se habilitan según el rol del usuario (administrador, operador o auditor) y según el estado de la elección: configuración, empadronamiento, jornada de votación, escrutinio y exportación, auditoría y gestión de usuarios. En la mesa de identificación, el operador busca la cédula del votante, compara la fotografía de registro con la persona presente, verifica la huella —momento en que se toma la fotografía de presencia— y, una vez identificada la persona, habilita la cabina (Figura 3.x).
+
+El kiosco del votante fue diseñado para facilitar su uso por personas de todas las edades: muestra las opciones con letras grandes y alto contraste, permite elegir con el ratón o con las teclas numéricas, exige una pantalla de confirmación con la posibilidad de corregir y, al registrar el voto, muestra el código del comprobante impreso durante siete segundos (Figura 3.y). La ventana de la cabina no puede cerrarse sin la contraseña de un operador. Las pruebas automatizadas de la interfaz recorren la elección completa mediante clics simulados y generan las capturas de pantalla que se incluyen en este documento.
+
+![Figura 3.x: Mesa de identificación con la fotografía de registro y la fotografía del día](../adjuntos/ui/04_identificacion.png)
+
+![Figura 3.y: Kiosco del votante, pantalla de selección](../adjuntos/ui/05_kiosco_seleccion.png)
+
+| Elemento del backlog | Resultado |
+|---|---|
+| Ingreso del personal con bloqueo y registro en bitácora | Completado |
+| Panel de mesa con páginas por rol y estado | Completado |
+| Mesa de identificación con fotografías y habilitación de cabina | Completado |
+| Kiosco del votante con confirmación y teclado | Completado |
+| Escrutinio, exportación y auditoría desde la interfaz | Completado |
+| Pruebas automatizadas de interfaz (114 pruebas en total, cobertura del 93 %) | Completado |
+
+<!-- Numerar las figuras al final (Figura 3.x, 3.y). Más capturas en docs/adjuntos/ui/. -->
+
 ### 3.2.4. Pruebas y calidad de software
 
 ### 3.2.5. Resultados

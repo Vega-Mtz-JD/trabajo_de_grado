@@ -28,6 +28,8 @@ votoseguro verificar <paquete.vsx> --frase ...        # auditoría triple de un 
 docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/*.docx
 blockchain/network/up.sh && blockchain/bridge/iniciar.sh   # Fabric + puente (luego: demo --fabric)
 pytest -m fabric                                      # integración con Fabric real
+votoseguro-ui [--fabric]                              # interfaz gráfica (panel de mesa + kiosco)
+VOTOSEGURO_CAPTURAS=../docs/adjuntos/ui QT_QPA_PLATFORM=offscreen pytest tests/test_ui.py   # capturas
 ```
 
 ## Reglas técnicas no negociables

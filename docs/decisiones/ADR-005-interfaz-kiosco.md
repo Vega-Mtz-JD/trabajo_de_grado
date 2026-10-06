@@ -16,3 +16,10 @@ El kiosco basado solo en bloquear atajos dentro de la aplicación es fácil de e
 ## Consecuencias
 - (+) Licencia limpia; el votante no tiene un escritorio al que escapar.
 - (−) Durante el desarrollo se ejecuta en ventana normal (bandera `--kiosco` para producción).
+
+## Seguimiento (Sprint 5)
+- Implementado: panel de mesa y kiosco como **dos ventanas del mismo proceso** (la mesa habilita la cabina
+  con una sesión de un solo uso). Con dos monitores el kiosco se ubica en el segundo; `--kiosco` lo abre en
+  pantalla completa sin bordes.
+- Pendiente (Sprint 6): `cage` presenta una sola ventana a pantalla completa. Opciones a evaluar: dos
+  equipos (mesa de identificación separada de la cabina), o un compositor de kiosco con varias salidas.

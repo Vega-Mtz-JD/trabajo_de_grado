@@ -98,7 +98,7 @@ class ImpresoraPDF(Impresora):
     def imprimir_documento(self, documento: Documento) -> None:
         self._contador += 1
         ruta = self.carpeta / f"{self._contador:02d}_{documento.nombre_archivo}.pdf"
-        _pdf_documento(ruta, documento)
+        pdf_documento(ruta, documento)
 
     def vaciar_urna(self) -> None:
         if not self._urna:
@@ -126,7 +126,7 @@ def _dibujar_qr(canvas, texto: str, x: float, y: float, lado: float) -> None:
     renderPDF.draw(dibujo, canvas, x, y)
 
 
-def _pdf_documento(ruta: Path, doc: Documento) -> None:
+def pdf_documento(ruta: Path, doc: Documento) -> None:
     from reportlab.lib.pagesizes import letter
     from reportlab.lib.units import cm
     from reportlab.pdfgen.canvas import Canvas

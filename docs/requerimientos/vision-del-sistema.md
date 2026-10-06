@@ -46,7 +46,7 @@ actualizado: 2026-10-05
 | RF12 | Auditoría triple por mesa (papel + USB + ledger) | ✔ Sprint 4 |
 | RF13 | **Consolidación** de todas las mesas: verificación de cada paquete y cómputo total | ✔ Sprint 3 |
 | RF14 | Anclaje de hitos en Hyperledger Fabric | ✔ Sprint 4 |
-| RF15 | Interfaces gráficas: kiosco del votante, panel del operador, panel del auditor | Sprint 5 |
+| RF15 | Interfaces gráficas: kiosco del votante, panel del operador, panel del auditor | ✔ Sprint 5 |
 
 ## Requerimientos no funcionales (RNF)
 
