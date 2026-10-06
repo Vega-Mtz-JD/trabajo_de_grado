@@ -43,9 +43,9 @@ actualizado: 2026-10-05
 | RF09 | Cierre con acta firmada y **lista de quienes no votaron** | ✔ Sprint 3 |
 | RF10 | Escrutinio en cada mesa con 3 de 5 custodios de esa mesa | ✔ Sprint 3 |
 | RF11 | Exportación del paquete de auditoría cifrado por mesa | ✔ Sprint 2 |
-| RF12 | Auditoría triple por mesa (papel + USB + ledger) | ✔ papel/USB · ledger Sprint 4 |
+| RF12 | Auditoría triple por mesa (papel + USB + ledger) | ✔ Sprint 4 |
 | RF13 | **Consolidación** de todas las mesas: verificación de cada paquete y cómputo total | ✔ Sprint 3 |
-| RF14 | Anclaje de hitos en Hyperledger Fabric | Sprint 4 |
+| RF14 | Anclaje de hitos en Hyperledger Fabric | ✔ Sprint 4 |
 | RF15 | Interfaces gráficas: kiosco del votante, panel del operador, panel del auditor | Sprint 5 |
 
 ## Requerimientos no funcionales (RNF)

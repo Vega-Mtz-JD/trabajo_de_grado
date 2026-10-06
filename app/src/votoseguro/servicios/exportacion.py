@@ -21,7 +21,7 @@ from votoseguro.cripto.hashing import canonico, sha3
 from votoseguro.cripto.llavero import b64, cifrar_con_frase
 from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado
-from votoseguro.servicios.base import Contexto, exigir_estado
+from votoseguro.servicios.base import anclar, Contexto, exigir_estado
 
 CONTEXTO_PAQUETE = b"votoseguro:paquete"
 
@@ -96,4 +96,5 @@ def exportar(ctx: Contexto, eleccion_id: str, carpeta: Path, frase: str) -> Paqu
         bitacora.registrar(ctx.conn, ctx.actor, "EXPORTACION",
                            {"eleccion": eleccion_id, "hash_manifiesto": hash_manifiesto})
         outbox.encolar(ctx.conn, "RegistrarExportacion", {**eleccion.ancla, "hash_manifiesto": hash_manifiesto})
+    anclar(ctx)
     return PaqueteExportado(ruta, hash_manifiesto)

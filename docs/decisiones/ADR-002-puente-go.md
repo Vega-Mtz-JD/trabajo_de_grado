@@ -23,5 +23,7 @@ con reintentos idempotentes.
 - (+) SDK oficial y mantenido; chaincode y puente en el mismo lenguaje.
 - (+) El outbox permite el **modo degradado**: la votación no depende de Fabric.
 - (−) Un proceso adicional que supervisar (systemd).
-- (−) `fabric-gateway` reciente requiere Go ≥ 1.25 (Debian 13 trae 1.24): instalar Go oficial
-  o fijar una versión compatible del módulo.
+- (−) `fabric-gateway` v1.12 requiere Go ≥ 1.25 (Debian 13 trae 1.24): se instaló Go 1.26.8 en
+  `~/.local/go` (ADR-010).
+- Implementado en el Sprint 4: `blockchain/bridge/` (REST: `/salud`, `/tx/{funcion}`, `/mesa/…`,
+  `/historial/…`; errores 409 = rechazo del chaincode, 503 = Fabric no disponible).

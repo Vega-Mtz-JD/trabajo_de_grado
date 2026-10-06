@@ -35,3 +35,44 @@ def pendientes(conn: psycopg.Connection) -> list[tuple[int, str, dict]]:
     return conn.execute(
         "SELECT id, funcion, argumentos FROM blockchain.outbox WHERE estado <> 'ENVIADO' ORDER BY id"
     ).fetchall()
+
+
+class ResultadoSincronizacion:
+    def __init__(self):
+        self.enviados = 0
+        self.pendientes = 0
+        self.error: str | None = None
+        self.rechazado = False
+
+    @property
+    def al_dia(self) -> bool:
+        return self.pendientes == 0 and self.error is None
+
+
+def sincronizar(conn: psycopg.Connection, cliente) -> ResultadoSincronizacion:
+    """Envía los anclajes pendientes **en orden**. Se detiene en el primer fallo, para no
+    anclar un hito antes que su predecesor.
+
+    * Fabric no disponible → el anclaje queda PENDIENTE (modo degradado) y se reintenta luego.
+    * Rechazo del chaincode → queda en ERROR: indica incoherencia y debe revisarlo un auditor.
+    """
+    from votoseguro.blockchain.cliente import AnclajeRechazado, PuenteNoDisponible
+
+    r = ResultadoSincronizacion()
+    filas = pendientes(conn)
+    for i, (id_, funcion, argumentos) in enumerate(filas):
+        try:
+            tx_id = cliente.enviar(funcion, argumentos)
+        except PuenteNoDisponible as e:
+            conn.execute("UPDATE blockchain.outbox SET intentos = intentos + 1 WHERE id = %s", (id_,))
+            r.error, r.pendientes = str(e), len(filas) - i
+            return r
+        except AnclajeRechazado as e:
+            conn.execute("UPDATE blockchain.outbox SET intentos = intentos + 1, estado = 'ERROR' WHERE id = %s",
+                         (id_,))
+            r.error, r.rechazado, r.pendientes = str(e), True, len(filas) - i
+            return r
+        conn.execute("UPDATE blockchain.outbox SET intentos = intentos + 1, estado = 'ENVIADO', tx_id = %s "
+                     "WHERE id = %s", (tx_id, id_))
+        r.enviados += 1
+    return r

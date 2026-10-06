@@ -14,5 +14,6 @@ Sirven como evidencia del proceso de ingeniería en el documento de Proyecto de 
 | [007](ADR-007-leveldb.md) | LevelDB como base de estado de Fabric (en lugar de CouchDB) | Aceptada |
 | [008](ADR-008-postgresql.md) | PostgreSQL 17 como BD del sistema (reemplaza SQLite/SQLCipher) + mezcla de urna | Propuesta |
 | [009](ADR-009-varias-mesas.md) | Varias urnas: definición exportable, padrón dividido local, foto, consolidación | Aceptada |
+| [010](ADR-010-red-fabric-ccaas.md) | Red Fabric: cryptogen, chaincode como servicio, hash del binario en el ciclo de vida | Aceptada |
 
 Plantilla: `Estado · Contexto · Decisión · Consecuencias`.

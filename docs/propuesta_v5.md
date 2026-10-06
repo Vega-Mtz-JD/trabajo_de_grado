@@ -350,10 +350,10 @@ Los periféricos se usan a través de interfaces. Así se puede desarrollar y pr
 ### 12.2 Topología mononodo
 
 Se levantan con `docker compose` y las imágenes **pre-cargadas** (`docker load`), sin necesidad de internet:
-- `ca.votoseguro`: Fabric CA (identidades del peer, del orderer, del cliente y del auditor).
+- Identidades generadas sin conexión con `cryptogen` (ADR-010): orderer, peer, administrador y cliente del puente.
 - `orderer.votoseguro`: ordering service **Raft de un solo nodo**.
 - `peer0.votoseguro`: con base de estado **LevelDB** (más liviana que CouchDB; las consultas ricas no son necesarias).
-- Canal `elecciones`, chaincode `acta` (Go).
+- Canal `elecciones`, chaincode `acta` (Go) ejecutado **como servicio** (CCaaS): el peer no compila ni descarga nada.
 
 Con un nodo, Raft **no tolera fallas**. Se usa porque es el único consenso soportado en Fabric 2.5 sin red externa. El modo degradado (§18) cubre el caso de caída.
 

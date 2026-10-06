@@ -44,7 +44,8 @@ class ResultadoConsolidacion:
 
 def consolidar(paquetes: list[Path], frase: str, *,
                conteos_papel: dict[str, dict[str, int]] | None = None,
-               huellas: dict[str, str] | None = None) -> ResultadoConsolidacion:
+               huellas: dict[str, str] | None = None,
+               consultar_ledger=None) -> ResultadoConsolidacion:
     """``conteos_papel`` y ``huellas`` son, por mesa, el conteo manual de VVPAT y la huella del
     equipo impresa en su zerésima (los ingresa el auditor)."""
     r = ResultadoConsolidacion()
@@ -54,8 +55,12 @@ def consolidar(paquetes: list[Path], frase: str, *,
         exp = verificacion.abrir_paquete(Path(ruta), frase, informe)
         mesa = exp["eleccion.json"]["mesa"] if exp else f"? ({Path(ruta).name})"
         if exp:
+            ledger, motivo = verificacion.obtener_ledger(consultar_ledger, exp["eleccion.json"])
+            if consultar_ledger is not None and ledger is None and "no está registrada" in motivo:
+                informe.agregar("LEDGER", "La mesa está registrada en el ledger", False)
             verificacion.verificar_expediente(exp, informe, conteo_papel=(conteos_papel or {}).get(mesa),
-                                              huella_esperada=(huellas or {}).get(mesa))
+                                              huella_esperada=(huellas or {}).get(mesa),
+                                              ledger=ledger, motivo_sin_ledger=motivo)
             informe.expediente = exp
         if mesa in r.informes_mesa:
             r.global_.agregar("CONSOLIDADO", f"Mesa {mesa} entregada una sola vez", False, "paquete repetido")

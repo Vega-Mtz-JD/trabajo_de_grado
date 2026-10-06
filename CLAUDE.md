@@ -26,6 +26,8 @@ pytest --cov=votoseguro --cov-report=term-missing     # cobertura
 VOTOSEGURO_DSN='dbname=votoseguro' votoseguro demo    # elección simulada completa (BD de desarrollo)
 votoseguro verificar <paquete.vsx> --frase ...        # auditoría triple de un paquete USB
 docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/*.docx
+blockchain/network/up.sh && blockchain/bridge/iniciar.sh   # Fabric + puente (luego: demo --fabric)
+pytest -m fabric                                      # integración con Fabric real
 ```
 
 ## Reglas técnicas no negociables
@@ -50,4 +52,4 @@ docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/
 ## Pendientes conocidos
 - `[EMPRESA]` sin definir. ADR-008 (PostgreSQL) pendiente del visto bueno de la tutora.
 - Hardware (ZKTeco ZK9500/SLK20R con SDK Linux, impresora ESC/POS) aún no comprado → usar simuladores.
-- `fabric-gateway` reciente requiere Go ≥ 1.25 (sistema: 1.24).
+- Go 1.26.8 en `~/.local/go` (usar `source blockchain/network/entorno.sh`).

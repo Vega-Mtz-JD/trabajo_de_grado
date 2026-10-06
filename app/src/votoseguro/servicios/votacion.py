@@ -18,7 +18,7 @@ from votoseguro.dominio.modelos import Comprobante, Estado, codigo_vvpat
 from votoseguro.hardware.huella import LectorNoDisponible
 from votoseguro.hardware.impresora import ImpresoraNoDisponible
 from votoseguro.servicios.base import (
-    AutenticacionFallida, Contexto, ErrorServicio, HardwareNoDisponible, OpcionInvalida, exigir_estado,
+    anclar, AutenticacionFallida, Contexto, ErrorServicio, HardwareNoDisponible, OpcionInvalida, exigir_estado,
 )
 
 MAX_INTENTOS = 3
@@ -161,4 +161,5 @@ def checkpoint(ctx: Contexto, eleccion_id: str) -> dict:
         repo.insertar_checkpoint(ctx.conn, eleccion_id, seq, datos["conteo"], datos["raiz_merkle"])
         bitacora.registrar(ctx.conn, "sistema", "CHECKPOINT", {"eleccion": eleccion_id, **datos})
         outbox.encolar(ctx.conn, "RegistrarCheckpoint", {**eleccion.ancla, **datos})
+    anclar(ctx)
     return datos

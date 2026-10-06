@@ -11,7 +11,7 @@ from votoseguro.cripto.shamir import Parte
 from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado, codigo_vvpat
 from votoseguro.servicios import actas
-from votoseguro.servicios.base import Contexto, DiscrepanciaDetectada, ErrorServicio, exigir_estado
+from votoseguro.servicios.base import anclar, Contexto, DiscrepanciaDetectada, ErrorServicio, exigir_estado
 
 
 class PartesInsuficientes(ErrorServicio):
@@ -71,5 +71,6 @@ def escrutar(ctx: Contexto, eleccion_id: str, partes: list[Parte | str]) -> acta
             **eleccion.ancla, "resultados": contenido["resultados"],
             "total": len(boletas), "hash_acta": acta.hash,
         })
+    anclar(ctx)
     actas.imprimir(ctx, eleccion_id, acta)
     return acta

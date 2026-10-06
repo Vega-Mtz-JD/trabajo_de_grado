@@ -1,0 +1,18 @@
+# Material criptográfico de la red mononodo (cryptogen, sin conexión). Ver ADR-010.
+OrdererOrgs:
+  - Name: Ordenante
+    Domain: ordenante.votoseguro.local
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        SANS: [localhost, 127.0.0.1]
+
+PeerOrgs:
+  - Name: Mesa
+    Domain: mesa.votoseguro.local
+    EnableNodeOUs: true
+    Template:
+      Count: 1            # peer0
+      SANS: [localhost, 127.0.0.1]
+    Users:
+      Count: 1            # User1: identidad del puente Go (rol client)

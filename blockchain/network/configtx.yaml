@@ -1,0 +1,85 @@
+# Configuración del canal "elecciones" (Fabric 2.5, sin canal de sistema). Ver ADR-001 y ADR-010.
+Organizations:
+  - &Ordenante
+    Name: OrdenanteMSP
+    ID: OrdenanteMSP
+    MSPDir: organizations/ordererOrganizations/ordenante.votoseguro.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('OrdenanteMSP.member')"}
+      Writers: {Type: Signature, Rule: "OR('OrdenanteMSP.member')"}
+      Admins: {Type: Signature, Rule: "OR('OrdenanteMSP.admin')"}
+    OrdererEndpoints:
+      - orderer.ordenante.votoseguro.local:7050
+
+  - &Mesa
+    Name: MesaMSP
+    ID: MesaMSP
+    MSPDir: organizations/peerOrganizations/mesa.votoseguro.local/msp
+    Policies:
+      Readers: {Type: Signature, Rule: "OR('MesaMSP.admin', 'MesaMSP.peer', 'MesaMSP.client')"}
+      Writers: {Type: Signature, Rule: "OR('MesaMSP.admin', 'MesaMSP.client')"}
+      Admins: {Type: Signature, Rule: "OR('MesaMSP.admin')"}
+      Endorsement: {Type: Signature, Rule: "OR('MesaMSP.peer')"}
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_5: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins: {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+    LifecycleEndorsement: {Type: ImplicitMeta, Rule: "MAJORITY Endorsement"}
+    Endorsement: {Type: ImplicitMeta, Rule: "MAJORITY Endorsement"}
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  EtcdRaft:
+    Consenters:
+      - Host: orderer.ordenante.votoseguro.local
+        Port: 7050
+        ClientTLSCert: organizations/ordererOrganizations/ordenante.votoseguro.local/orderers/orderer.ordenante.votoseguro.local/tls/server.crt
+        ServerTLSCert: organizations/ordererOrganizations/ordenante.votoseguro.local/orderers/orderer.ordenante.votoseguro.local/tls/server.crt
+  BatchTimeout: 500ms        # latencia baja: hay pocas transacciones por minuto
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins: {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+    BlockValidation: {Type: ImplicitMeta, Rule: "ANY Writers"}
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers: {Type: ImplicitMeta, Rule: "ANY Readers"}
+    Writers: {Type: ImplicitMeta, Rule: "ANY Writers"}
+    Admins: {Type: ImplicitMeta, Rule: "MAJORITY Admins"}
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  CanalElecciones:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *Ordenante
+      Capabilities: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *Mesa
+      Capabilities: *ApplicationCapabilities

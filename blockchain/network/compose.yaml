@@ -1,0 +1,106 @@
+# Red Hyperledger Fabric 2.5 mononodo de VOTO SEGURO (ADR-001, ADR-007, ADR-010).
+# Puertos publicados solo en 127.0.0.1. Datos del ledger en volúmenes Docker con nombre.
+name: votoseguro-fabric
+
+
+networks:
+  fabric:
+    name: votoseguro_fabric
+
+volumes:
+  orderer:
+  peer0:
+
+services:
+  orderer:
+    image: hyperledger/fabric-orderer:2.5.16
+    container_name: orderer.ordenante.votoseguro.local
+    environment:
+      FABRIC_LOGGING_SPEC: INFO
+      ORDERER_GENERAL_LISTENADDRESS: 0.0.0.0
+      ORDERER_GENERAL_LISTENPORT: "7050"
+      ORDERER_GENERAL_LOCALMSPID: OrdenanteMSP
+      ORDERER_GENERAL_LOCALMSPDIR: /var/hyperledger/orderer/msp
+      ORDERER_GENERAL_TLS_ENABLED: "true"
+      ORDERER_GENERAL_TLS_PRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_TLS_CERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_TLS_ROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_GENERAL_CLUSTER_ROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_GENERAL_BOOTSTRAPMETHOD: none
+      ORDERER_CHANNELPARTICIPATION_ENABLED: "true"
+      ORDERER_ADMIN_TLS_ENABLED: "true"
+      ORDERER_ADMIN_TLS_CERTIFICATE: /var/hyperledger/orderer/tls/server.crt
+      ORDERER_ADMIN_TLS_PRIVATEKEY: /var/hyperledger/orderer/tls/server.key
+      ORDERER_ADMIN_TLS_ROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_ADMIN_TLS_CLIENTROOTCAS: "[/var/hyperledger/orderer/tls/ca.crt]"
+      ORDERER_ADMIN_LISTENADDRESS: 0.0.0.0:7053
+      ORDERER_OPERATIONS_LISTENADDRESS: 0.0.0.0:9443
+    command: orderer
+    volumes:
+      - type: bind
+        source: ./organizations/ordererOrganizations/ordenante.votoseguro.local/orderers/orderer.ordenante.votoseguro.local/msp
+        target: /var/hyperledger/orderer/msp
+        read_only: true
+      - type: bind
+        source: ./organizations/ordererOrganizations/ordenante.votoseguro.local/orderers/orderer.ordenante.votoseguro.local/tls
+        target: /var/hyperledger/orderer/tls
+        read_only: true
+      - orderer:/var/hyperledger/production/orderer
+    ports:
+      - 127.0.0.1:7050:7050
+      - 127.0.0.1:7053:7053
+    networks: [fabric]
+
+  peer0:
+    image: hyperledger/fabric-peer:2.5.16
+    container_name: peer0.mesa.votoseguro.local
+    environment:
+      FABRIC_LOGGING_SPEC: INFO
+      CORE_PEER_ID: peer0.mesa.votoseguro.local
+      CORE_PEER_ADDRESS: peer0.mesa.votoseguro.local:7051
+      CORE_PEER_LISTENADDRESS: 0.0.0.0:7051
+      CORE_PEER_CHAINCODEADDRESS: peer0.mesa.votoseguro.local:7052
+      CORE_PEER_CHAINCODELISTENADDRESS: 0.0.0.0:7052
+      CORE_PEER_GOSSIP_BOOTSTRAP: peer0.mesa.votoseguro.local:7051
+      CORE_PEER_GOSSIP_EXTERNALENDPOINT: peer0.mesa.votoseguro.local:7051
+      CORE_PEER_LOCALMSPID: MesaMSP
+      CORE_PEER_MSPCONFIGPATH: /etc/hyperledger/peer/msp
+      CORE_PEER_TLS_ENABLED: "true"
+      CORE_PEER_TLS_CERT_FILE: /etc/hyperledger/peer/tls/server.crt
+      CORE_PEER_TLS_KEY_FILE: /etc/hyperledger/peer/tls/server.key
+      CORE_PEER_TLS_ROOTCERT_FILE: /etc/hyperledger/peer/tls/ca.crt
+      CORE_LEDGER_STATE_STATEDATABASE: goleveldb
+      CORE_OPERATIONS_LISTENADDRESS: 0.0.0.0:9444
+      CORE_CHAINCODE_EXECUTETIMEOUT: 30s
+    command: peer node start
+    volumes:
+      - type: bind
+        source: ./organizations/peerOrganizations/mesa.votoseguro.local/peers/peer0.mesa.votoseguro.local/msp
+        target: /etc/hyperledger/peer/msp
+        read_only: true
+      - type: bind
+        source: ./organizations/peerOrganizations/mesa.votoseguro.local/peers/peer0.mesa.votoseguro.local/tls
+        target: /etc/hyperledger/peer/tls
+        read_only: true
+      - peer0:/var/hyperledger/production
+    ports:
+      - 127.0.0.1:7051:7051
+    depends_on: [orderer]
+    networks: [fabric]
+
+  # Chaincode "acta" como servicio (CCaaS): binario Go estático sobre la imagen base de Fabric.
+  acta:
+    image: hyperledger/fabric-baseos:2.5.16
+    container_name: acta.mesa.votoseguro.local
+    environment:
+      CHAINCODE_SERVER_ADDRESS: 0.0.0.0:9999
+      CHAINCODE_ID: ${CHAINCODE_ID:?ejecute up.sh para calcular el identificador del paquete}
+    command: /cc/acta
+    volumes:
+      - type: bind
+        source: ./build/acta
+        target: /cc/acta
+        read_only: true
+    networks: [fabric]

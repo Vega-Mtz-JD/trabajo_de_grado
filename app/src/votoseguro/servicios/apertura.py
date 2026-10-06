@@ -12,7 +12,7 @@ from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado
 from votoseguro.servicios import actas
 from votoseguro.servicios.base import (
-    VERSION_SOFTWARE, Contexto, DiscrepanciaDetectada, HardwareNoDisponible, exigir_estado,
+    anclar, VERSION_SOFTWARE, Contexto, DiscrepanciaDetectada, HardwareNoDisponible, exigir_estado,
 )
 
 
@@ -60,5 +60,6 @@ def abrir(ctx: Contexto, eleccion_id: str) -> actas.ActaFirmada:
             **eleccion.ancla, "hash_zeresima": acta.hash,
             "compromiso_padron": contenido["padron"]["compromiso"], "habilitados": padron["habilitados"],
         })
+    anclar(ctx)
     actas.imprimir(ctx, eleccion_id, acta)
     return acta

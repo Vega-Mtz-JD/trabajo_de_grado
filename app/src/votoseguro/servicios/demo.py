@@ -69,7 +69,8 @@ class ResumenDemo:
 
 
 def ejecutar(conn, carpeta: Path, *, votantes: int = 100, mesas: int = 1, bits: int = 3072,
-             semilla: int | None = None, avisar=print) -> ResumenDemo:
+             semilla: int | None = None, avisar=print, puente=None) -> ResumenDemo:
+    """``puente``: ClientePuente para anclar en Hyperledger Fabric (None = sin anclaje)."""
     # Solo simula el comportamiento de los votantes; no se usa para nada criptográfico.
     azar = random.Random(semilla)  # nosec B311
     carpeta = Path(carpeta)
@@ -83,7 +84,7 @@ def ejecutar(conn, carpeta: Path, *, votantes: int = 100, mesas: int = 1, bits: 
         llavero.guardar(carpeta / f"mesa{mesa}" / "llavero.vsk", FRASE_DEMO)
         ctx = Contexto(conn, llavero, LectorSimulado(tasa_rechazo=0.15, azar=azar),
                        ImpresoraPDF(carpeta / f"mesa{mesa}" / "impresiones"), f"operador.mesa{mesa}",
-                       CamaraSimulada())
+                       CamaraSimulada(), puente)
         urnas.append(Urna(mesa, ctx))
 
     t = time.perf_counter()
@@ -176,7 +177,8 @@ def ejecutar(conn, carpeta: Path, *, votantes: int = 100, mesas: int = 1, bits: 
     # El auditor ingresa, por mesa, el conteo manual de los VVPAT y la huella impresa en la zerésima.
     consolidado = consolidacion.consolidar(
         paquetes, FRASE_DEMO, conteos_papel={m: dict(c) for m, c in papel.items()},
-        huellas={u.mesa: u.ctx.llavero.huella_dispositivo for u in urnas})
+        huellas={u.mesa: u.ctx.llavero.huella_dispositivo for u in urnas},
+        consultar_ledger=puente.consultar_mesa if puente else None)
     return ResumenDemo(definicion.eleccion_global, carpeta, paquetes, consolidado, cruce, eventos, tiempos)
 
 

@@ -37,4 +37,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
-markers = ["bd: pruebas que usan una instancia temporal de PostgreSQL"]
+markers = [
+    "bd: pruebas que usan una instancia temporal de PostgreSQL",
+    "fabric: integración con la red Fabric real (se omiten si no está levantada)",
+]

@@ -8,7 +8,7 @@ from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado
 from votoseguro.hardware.impresora import Documento
 from votoseguro.servicios import actas
-from votoseguro.servicios.base import Contexto, DiscrepanciaDetectada, exigir_estado
+from votoseguro.servicios.base import anclar, Contexto, DiscrepanciaDetectada, exigir_estado
 from votoseguro.servicios.votacion import checkpoint
 
 
@@ -56,6 +56,7 @@ def cerrar(ctx: Contexto, eleccion_id: str) -> actas.ActaFirmada:
             **eleccion.ancla, "total_votos": total_votos,
             "total_votantes": padron["votaron"], "raiz_merkle": ultimo["raiz_merkle"], "hash_acta": acta.hash,
         })
+    anclar(ctx)
     actas.imprimir(ctx, eleccion_id, acta)
     ctx.impresora.imprimir_documento(Documento(
         f"LISTA DE VOTANTES QUE NO VOTARON — MESA {eleccion.mesa}",

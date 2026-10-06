@@ -1,6 +1,7 @@
 """Contexto de ejecución y errores comunes de los servicios."""
 
 from dataclasses import dataclass
+from typing import Any
 
 import psycopg
 
@@ -52,6 +53,8 @@ class Contexto:
     impresora: Impresora
     actor: str
     camara: Camara | None = None
+    puente: Any | None = None          # ClientePuente (Fabric); None = sin anclaje inmediato
+    degradado: bool = False            # Fabric no respondió en el último intento
 
     def tomar_foto(self) -> bytes:
         from votoseguro.hardware.camara import CamaraNoDisponible
@@ -74,3 +77,27 @@ def exigir_estado(ctx: Contexto, eleccion_id: str, *permitidos: Estado) -> Elecc
         nombres = ", ".join(p.value for p in permitidos)
         raise EstadoIncorrecto(f"la elección está en {eleccion.estado.value}; se requiere {nombres}")
     return eleccion
+
+
+def anclar(ctx: Contexto):
+    """Envía al ledger los anclajes pendientes del outbox (si hay puente configurado).
+
+    Nunca interrumpe el proceso electoral: si Fabric no responde, entra en modo degradado y
+    los anclajes quedan pendientes para el próximo intento (ADR-002). Los cambios de modo y los
+    rechazos del chaincode quedan en la bitácora.
+    """
+    if ctx.puente is None:
+        return None
+    from votoseguro.auditoria import bitacora
+    from votoseguro.blockchain import outbox
+
+    r = outbox.sincronizar(ctx.conn, ctx.puente)
+    if r.rechazado:
+        bitacora.registrar(ctx.conn, "sistema", "ANCLAJE_RECHAZADO", {"error": r.error[:300]})
+    elif r.error and not ctx.degradado:
+        ctx.degradado = True
+        bitacora.registrar(ctx.conn, "sistema", "MODO_DEGRADADO", {"pendientes": r.pendientes})
+    elif r.error is None and ctx.degradado:
+        ctx.degradado = False
+        bitacora.registrar(ctx.conn, "sistema", "ANCLAJE_RESTABLECIDO", {"enviados": r.enviados})
+    return r

@@ -27,7 +27,7 @@ from votoseguro.cripto.shamir import Parte
 from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Definicion, Opcion, TipoOpcion
 from votoseguro.hardware.impresora import Documento
-from votoseguro.servicios.base import Contexto, ErrorServicio
+from votoseguro.servicios.base import anclar, Contexto, ErrorServicio
 
 CONTEXTO_DEFINICION = b"votoseguro:definicion"
 
@@ -160,6 +160,7 @@ def instalar_mesa(ctx: Contexto, definicion: Definicion, mesa: str, *, custodios
              "Guarde esta hoja en un sobre sellado y firmado.",
              "Sin el número mínimo de partes los votos de esta mesa NO pueden contarse."],
             parte.a_texto(), f"parte_mesa{mesa}_custodio_{parte.x}"))
+    anclar(ctx)
     return EleccionCreada(eid, partes, h)
 
 

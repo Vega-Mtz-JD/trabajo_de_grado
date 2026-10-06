@@ -21,8 +21,14 @@ partes_shamir/
 # Fabric: material criptográfico y artefactos generados
 blockchain/network/organizations/
 blockchain/network/channel-artifacts/
+blockchain/network/datos/
+blockchain/network/build/
+blockchain/network/bin/
+blockchain/network/config/
 blockchain/network/*.tar.gz
-blockchain/bridge/bridge
+blockchain/chaincode/acta/build/
+blockchain/chaincode/acta/acta
+blockchain/bridge/puente
 
 # SDK propietario de ZKTeco (no redistribuible)
 vendor/zkfinger/
@@ -39,3 +45,5 @@ docs/exportar/plantilla_upea.docx
 
 # Salidas de la simulación (impresiones PDF, paquetes USB, llavero de demo)
 salida_demo/
+blockchain/bridge/puente.log
+blockchain/bridge/puente.pid

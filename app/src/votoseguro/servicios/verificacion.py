@@ -76,6 +76,7 @@ def abrir_paquete(ruta: Path, frase: str, informe: Informe) -> dict[str, Any] | 
 
     with zipfile.ZipFile(io.BytesIO(contenido)) as z:
         archivos = {n: z.read(n) for n in z.namelist()}
+    hash_manifiesto = sha3(archivos["manifiesto.json"])
     manifiesto = json.loads(archivos.pop("manifiesto.json"))
     firma = archivos.pop("manifiesto.firma")
     dispositivo = json.loads(archivos["dispositivo.json"])
@@ -87,14 +88,19 @@ def abrir_paquete(ruta: Path, frase: str, informe: Informe) -> dict[str, Any] | 
     faltantes = sorted(set(esperados) - set(archivos))
     informe.agregar("USB", "Hashes de los archivos del paquete", not alterados and not faltantes,
                     ", ".join(alterados + faltantes))
-    return {n: json.loads(d) for n, d in archivos.items()}
+    expediente = {n: json.loads(d) for n, d in archivos.items()}
+    expediente["_hash_manifiesto"] = hash_manifiesto
+    return expediente
 
 
 # --- Verificación del expediente -------------------------------------------------------------
 
 def verificar_expediente(exp: dict[str, Any], informe: Informe, *,
                          conteo_papel: dict[str, int] | None = None,
-                         huella_esperada: str | None = None) -> Informe:
+                         huella_esperada: str | None = None,
+                         ledger: dict[str, Any] | None = None,
+                         motivo_sin_ledger: str = "sin conexión con el ledger") -> Informe:
+    """``ledger`` es el estado anclado de la mesa en Fabric (``ConsultarMesa``)."""
     eleccion, actas = exp["eleccion.json"], exp["actas.json"]
     dispositivo = exp["dispositivo.json"]
     publica = serialization.load_pem_public_key(dispositivo["clave_publica_pem"].encode())
@@ -206,23 +212,76 @@ def verificar_expediente(exp: dict[str, Any], informe: Informe, *,
     else:
         informe.agregar("PAPEL", "Conteo manual de VVPAT", None, "no ingresado")
 
-    # Ledger
-    anclajes = [o for o in exp["outbox.json"]
-                if o["funcion"] == "RegistrarCierre"
-                and o["argumentos"].get("eleccion_global") == eleccion["eleccion_global"]
-                and o["argumentos"].get("mesa") == eleccion["mesa"]]
-    informe.agregar("LEDGER", "Anclaje del cierre registrado para Fabric",
-                    bool(anclajes) and anclajes[-1]["argumentos"]["raiz_merkle"] == cierre["raiz_merkle"])
-    informe.agregar("LEDGER", "Comparación con el ledger de Hyperledger Fabric", None,
-                    "se habilita en el Sprint 3")
+    # Ledger (Hyperledger Fabric)
+    if ledger is None:
+        anclajes = [o for o in exp["outbox.json"]
+                    if o["funcion"] == "RegistrarCierre"
+                    and o["argumentos"].get("eleccion_global") == eleccion["eleccion_global"]
+                    and o["argumentos"].get("mesa") == eleccion["mesa"]]
+        informe.agregar("LEDGER", "Anclaje del cierre registrado para Fabric",
+                        bool(anclajes) and anclajes[-1]["argumentos"]["raiz_merkle"] == cierre["raiz_merkle"])
+        informe.agregar("LEDGER", "Comparación con el ledger de Hyperledger Fabric", None, motivo_sin_ledger)
+    else:
+        verificar_ledger(exp, ledger, informe)
     return informe
 
 
+def verificar_ledger(exp: dict[str, Any], ledger: dict[str, Any], informe: Informe) -> None:
+    """Compara lo anclado en Fabric con el paquete USB: si alguien modificó la base de datos y
+    regeneró actas y paquete, no puede modificar el ledger (ADR-001)."""
+    eleccion, actas = exp["eleccion.json"], exp["actas.json"]
+    zeresima, cierre, escrutinio = (actas[t]["contenido"] for t in ("ZERESIMA", "CIERRE", "ESCRUTINIO"))
+    huella_clave = firmas.huella(serialization.load_pem_public_key(eleccion["clave_publica_pem"].encode()))
+    checkpoints = [{"seq": c["seq"], "conteo": c["conteo"], "raiz_merkle": c["raiz_merkle"]}
+                   for c in exp["checkpoints.json"]]
+    comprobaciones = [
+        ("Registro: definición, clave de la elección y equipo",
+         ledger.get("hash_configuracion") == eleccion["hash_configuracion"]
+         and ledger.get("huella_clave_eleccion") == huella_clave
+         and ledger.get("huella_dispositivo") == exp["dispositivo.json"]["huella"]),
+        ("Apertura: hash de la zerésima y compromiso del padrón",
+         ledger.get("hash_zeresima") == actas["ZERESIMA"]["hash"]
+         and ledger.get("compromiso_padron") == zeresima["padron"]["compromiso"]),
+        ("Checkpoints anclados = checkpoints del paquete", ledger.get("checkpoints") == checkpoints),
+        ("Cierre: totales, raíz de Merkle y hash del acta",
+         ledger.get("total_votos") == cierre["total_votos"]
+         and ledger.get("raiz_merkle") == cierre["raiz_merkle"]
+         and ledger.get("hash_acta_cierre") == actas["CIERRE"]["hash"]),
+        ("Escrutinio: resultados y hash del acta",
+         ledger.get("resultados") == escrutinio["resultados"]
+         and ledger.get("hash_acta_escrutinio") == actas["ESCRUTINIO"]["hash"]),
+        ("Exportación: hash del manifiesto del paquete USB",
+         ledger.get("estado") == "EXPORTADA" and ledger.get("hash_manifiesto") == exp.get("_hash_manifiesto")),
+    ]
+    for nombre, ok in comprobaciones:
+        informe.agregar("LEDGER", nombre, ok)
+    return informe
+
+
+def obtener_ledger(consultar_ledger, eleccion_json: dict[str, Any]) -> tuple[dict[str, Any] | None, str]:
+    """Consulta el estado anclado de la mesa. Devuelve (estado, motivo si no se pudo)."""
+    if consultar_ledger is None:
+        return None, "no se indicó un ledger (use --fabric)"
+    from votoseguro.blockchain.cliente import PuenteNoDisponible
+
+    try:
+        estado = consultar_ledger(eleccion_json["eleccion_global"], eleccion_json["mesa"])
+    except PuenteNoDisponible as e:
+        return None, f"ledger no disponible: {e}"
+    return estado, "la mesa no está registrada en el ledger"
+
+
 def verificar_paquete(ruta: Path, frase: str, *, conteo_papel: dict[str, int] | None = None,
-                      huella_esperada: str | None = None) -> Informe:
+                      huella_esperada: str | None = None, consultar_ledger=None) -> Informe:
+    """``consultar_ledger(eleccion_global, mesa)`` devuelve el estado anclado (p. ej.
+    ``ClientePuente.consultar_mesa``)."""
     informe = Informe()
     expediente = abrir_paquete(ruta, frase, informe)
     if expediente is not None:
-        verificar_expediente(expediente, informe, conteo_papel=conteo_papel, huella_esperada=huella_esperada)
+        ledger, motivo = obtener_ledger(consultar_ledger, expediente["eleccion.json"])
+        if consultar_ledger is not None and ledger is None and "no está registrada" in motivo:
+            informe.agregar("LEDGER", "La mesa está registrada en el ledger", False)
+        verificar_expediente(expediente, informe, conteo_papel=conteo_papel, huella_esperada=huella_esperada,
+                             ledger=ledger, motivo_sin_ledger=motivo)
         informe.expediente = expediente
     return informe

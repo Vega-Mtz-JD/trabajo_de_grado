@@ -80,6 +80,24 @@ Durante la jornada, al identificarse, el votante es fotografiado en la mesa de i
 <!-- CAPTURA: salida de `votoseguro demo --mesas 3` mostrando el cruce de padrones y el cómputo consolidado. -->
 <!-- CAPTURA: lista impresa de votantes que no votaron (salida_demo/mesa01/impresiones). -->
 
+#### Sprint 4: Red Hyperledger Fabric y anclaje de hitos
+
+El cuarto sprint implementó el registro distribuido. Se configuró una red Hyperledger Fabric 2.5 de un solo nodo, compuesta por un servicio de ordenamiento con consenso Raft, un nodo par con base de estado LevelDB y el canal `elecciones`, cuyas identidades se generaron localmente con la herramienta `cryptogen`. El contrato inteligente `acta`, escrito en Go, registra los seis hitos de cada mesa (registro, apertura, puntos de control, cierre, escrutinio y exportación) y rechaza cualquier hito que no respete el orden de la máquina de estados o cuyos conteos sean incoherentes con lo ya registrado. El contrato se ejecuta como servicio, de modo que el nodo par no necesita compilarlo ni descargar dependencias, lo que preserva la operación sin conexión. Para que toda modificación del contrato quede registrada, la etiqueta de su paquete incluye el resumen criptográfico del binario, lo que obliga a aprobar una nueva versión en el ciclo de vida de la red.
+
+La aplicación se comunica con la red mediante un servicio puente escrito en Go con la biblioteca oficial `fabric-gateway`, que solo acepta conexiones locales autenticadas con un token. Cada hito se registra primero en una cola local (outbox) dentro de la misma transacción de la base de datos y luego se envía a la red en orden estricto; si la red no responde, la votación continúa en modo degradado y los registros pendientes se envían al restablecerse la conexión. Finalmente, el verificador incorporó seis comprobaciones que contrastan el paquete de auditoría con lo registrado en la red, completando la auditoría en sus tres niveles. La latencia medida para registrar un hito fue de 0,525 segundos en promedio.
+
+| Elemento del backlog | Resultado |
+|---|---|
+| Red Fabric 2.5 de un nodo (orderer Raft, peer, canal) | Completado |
+| Contrato inteligente `acta` con validación de la secuencia electoral | Completado |
+| Servicio puente en Go con `fabric-gateway` | Completado |
+| Cola de anclajes (outbox) y modo degradado | Completado |
+| Comparación del paquete de auditoría con el registro distribuido | Completado |
+| Pruebas: 108 en Python, 14 en Go e integración con la red real | Completado |
+
+<!-- CAPTURA: salida de `votoseguro ledger <eleccion> 01` con el historial de transacciones. -->
+<!-- CAPTURA: `docker ps` mostrando orderer, peer0 y acta en ejecución. -->
+
 ### 3.2.4. Pruebas y calidad de software
 
 ### 3.2.5. Resultados
