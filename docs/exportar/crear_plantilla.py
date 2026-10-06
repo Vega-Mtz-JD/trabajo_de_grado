@@ -8,6 +8,7 @@ import subprocess
 from pathlib import Path
 
 from docx import Document
+from docx.enum.style import WD_STYLE_TYPE
 from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_LINE_SPACING
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
@@ -30,10 +31,21 @@ def campo_pagina(parrafo):
         run._r.append(el)
 
 
+def quitar_tema(rfonts):
+    # Los estilos de pandoc usan la fuente del tema (asciiTheme), que tiene prioridad sobre "Arial".
+    for atributo in ("w:asciiTheme", "w:hAnsiTheme", "w:eastAsiaTheme", "w:cstheme"):
+        rfonts.attrib.pop(qn(atributo), None)
+
+
+def arial(font, rpr):
+    font.name = "Arial"
+    rpr.rFonts.set(qn("w:eastAsia"), "Arial")
+    quitar_tema(rpr.rFonts)
+
+
 def fuente(estilo, tam, negrita=None):
-    estilo.font.name = "Arial"
+    arial(estilo.font, estilo.element.get_or_add_rPr())
     estilo.font.size = Pt(tam)
-    estilo.element.rPr.rFonts.set(qn("w:eastAsia"), "Arial")
     estilo.font.color.rgb = None
     if negrita is not None:
         estilo.font.bold = negrita
@@ -41,7 +53,7 @@ def fuente(estilo, tam, negrita=None):
 
 def main():
     base = subprocess.run(
-        ["pandoc", "-o", "-", "--print-default-data-file", "reference.docx"],
+        ["pandoc", "--print-default-data-file", "reference.docx"],
         check=True, capture_output=True,
     ).stdout
     tmp = DESTINO.with_suffix(".tmp.docx")
@@ -56,9 +68,26 @@ def main():
         cab.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         campo_pagina(cab)
 
-    estilos = doc.styles
+    # Búsqueda directa por nombre: python-docx traduce "Heading 1" a "heading 1" y no
+    # encuentra los estilos de la plantilla de pandoc.
+    estilos = {s.name: s for s in doc.styles}
+    # Arial en todos los estilos (título, autor, índice, tablas…) y en los valores por defecto.
+    for e in estilos.values():
+        if e.type in (WD_STYLE_TYPE.PARAGRAPH, WD_STYLE_TYPE.CHARACTER):
+            arial(e.font, e.element.get_or_add_rPr())
+    predeterminado = doc.styles.element.find(qn("w:docDefaults"))
+    if predeterminado is not None:
+        rpr = predeterminado.find(qn("w:rPrDefault") + "/" + qn("w:rPr"))
+        if rpr is not None:
+            fuentes = rpr.find(qn("w:rFonts"))
+            if fuentes is None:
+                fuentes = OxmlElement("w:rFonts")
+                rpr.insert(0, fuentes)
+            quitar_tema(fuentes)
+            for atributo in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+                fuentes.set(qn(atributo), "Arial")
     for nombre in ("Normal", "Body Text", "First Paragraph", "Compact", "Block Text"):
-        if nombre in [s.name for s in estilos]:
+        if nombre in estilos:
             e = estilos[nombre]
             fuente(e, 11)
             pf = e.paragraph_format
@@ -74,9 +103,9 @@ def main():
     estilos["Heading 1"].paragraph_format.alignment = WD_ALIGN_PARAGRAPH.CENTER
     estilos["Heading 1"].paragraph_format.page_break_before = True  # Art. 35 h)
     for nombre in ("Caption", "Table Caption", "Image Caption", "Footnote Text"):
-        if nombre in [s.name for s in estilos]:
+        if nombre in estilos:
             fuente(estilos[nombre], 10)
-    if "Bibliography" in [s.name for s in estilos]:
+    if "Bibliography" in estilos:
         b = estilos["Bibliography"]
         fuente(b, 11)
         b.paragraph_format.left_indent = Cm(1.27)       # sangría francesa APA

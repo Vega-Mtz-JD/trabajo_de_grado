@@ -19,6 +19,26 @@
 <!-- Un subapartado por sprint: objetivo, backlog del sprint, resultado, capturas.
      Fuente: docs/bitacora/sprint-*.md -->
 
+#### Sprint 1: Núcleo criptográfico, base de datos y bitácora
+
+El primer sprint tuvo como objetivo construir los componentes de seguridad sobre los que se apoya el resto del sistema. En el módulo criptográfico se implementaron la función hash SHA3-256 con serialización canónica, el árbol de Merkle que resume el conjunto de votos en un único valor, el esquema de secreto compartido de Shamir sobre el cuerpo finito GF(2⁸) y el cifrado híbrido de votos, que combina AES-256-GCM con RSA-OAEP. Este último produce textos cifrados de longitud fija, de modo que el tamaño no revela la opción elegida, y deposita la clave privada de la elección bajo la custodia de cinco personas, de las cuales al menos tres deben concurrir para descifrarla. Se completaron además las firmas digitales RSA-PSS que respaldan la zerésima y las actas.
+
+La persistencia se implementó en PostgreSQL 17 con cinco esquemas (elección, padrón, urna, auditoría y blockchain) y roles de mínimo privilegio. El rol de la aplicación no puede insertar votos directamente ni modificar el indicador de participación del votante: solo puede invocar la función `urna.emitir_voto()`, que realiza ambas operaciones en una única transacción. Los votos, la bitácora y las actas quedaron protegidos con disparadores de solo inserción que impiden su modificación incluso al superusuario. Durante las pruebas se identificó que la columna interna `xmin` de PostgreSQL permite reconstruir el orden de emisión y vincular a cada votante con su voto. Para mitigar este riesgo se diseñó la función `urna.mezclar()`, que reescribe la urna en orden aleatorio y verifica que su contenido no haya cambiado. Finalmente, se implementó la bitácora de auditoría encadenada por hash, cuya integridad se comprueba recalculando la cadena y contrastando la última entrada con un ancla externa.
+
+| Elemento del backlog | Resultado |
+|---|---|
+| Hash SHA3-256, serialización canónica y árbol de Merkle | Completado |
+| Secreto compartido de Shamir (3 de 5) | Completado |
+| Cifrado híbrido de votos y custodia de la clave | Completado |
+| Firmas digitales RSA-PSS | Completado |
+| Esquema PostgreSQL, roles, disparadores y máquina de estados | Completado |
+| Emisión atómica del voto y mezcla de la urna | Completado |
+| Bitácora de auditoría encadenada | Completado |
+| Pruebas automatizadas (61 pruebas, cobertura del 95 %) | Completado |
+
+<!-- CAPTURA: salida de `pytest --cov=votoseguro` en la terminal (61 passed, 95 %). -->
+<!-- CAPTURA: diagrama entidad-relación de la BD generado con DBeaver o pgAdmin. -->
+
 ### 3.2.4. Pruebas y calidad de software
 
 ### 3.2.5. Resultados

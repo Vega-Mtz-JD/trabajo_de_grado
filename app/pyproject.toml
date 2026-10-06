@@ -31,6 +31,10 @@ votoseguro = "votoseguro.cli:main"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+"votoseguro.datos" = ["*.sql"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = ["bd: pruebas que usan una instancia temporal de PostgreSQL"]

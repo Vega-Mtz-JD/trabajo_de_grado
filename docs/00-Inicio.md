@@ -21,7 +21,8 @@
 - [[normativa/guia_tutora.txt|Guía de la tutora (texto)]] · `normativa/GUIA ... .docx` (original)
 
 ## Bitácora
-- [[bitacora/sprint-0|Sprint 0]]
+- [[bitacora/sprint-0|Sprint 0]] — propuesta v5 y entorno
+- [[bitacora/sprint-1|Sprint 1]] — criptografía, PostgreSQL y bitácora (61 pruebas, 95 %)
 
 ## Formato (Art. 34–35)
 Carta · Arial 11 (10 en tablas/figuras) · interlineado 2 · márgenes 2.55 / 2.55 / **3 izq** / 2.55 · número de página arriba a la derecha · APA 7 · cada capítulo en hoja nueva.

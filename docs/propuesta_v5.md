@@ -513,8 +513,8 @@ CREATE TABLE eleccion.usuario (nombre text PRIMARY KEY,
 
 -- Append-only: triggers BEFORE UPDATE OR DELETE / BEFORE TRUNCATE → RAISE EXCEPTION
 -- en urna.voto (salvo dentro de urna.mezclar()), auditoria.bitacora y eleccion.acta.
--- Privilegios: GRANT UPDATE (ya_voto) ON padron.votante TO vs_app;  -- solo esa columna
---              GRANT INSERT ON urna.voto TO vs_app;  (sin UPDATE/DELETE/TRUNCATE)
+-- Privilegios: vs_app NO tiene INSERT en urna.voto ni UPDATE de ya_voto; vota solo con
+--              urna.emitir_voto() (SECURITY DEFINER: marca ya_voto + inserta el voto, atómico).
 ```
 
 | Aspecto | Medida |

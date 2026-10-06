@@ -48,7 +48,7 @@ Usar **PostgreSQL 17** (paquete nativo de Debian 13, sin Docker), con las siguie
 | Rol | Permisos |
 |---|---|
 | `vs_propietario` (NOLOGIN) | Dueño de los esquemas y de las funciones `SECURITY DEFINER` |
-| `vs_app` | `INSERT` en `urna.voto`, en `auditoria.bitacora` y en las actas; `UPDATE (ya_voto)` en `padron.votante` (**solo esa columna**); `SELECT` limitado |
+| `vs_app` | **Sin** `INSERT` directo en `urna.voto` ni `UPDATE` de `ya_voto`: vota solo con la función `urna.emitir_voto()` (`SECURITY DEFINER`, atómica). `INSERT` en bitácora, actas y checkpoints; `UPDATE` solo de columnas puntuales (`estado`, datos del padrón antes de la apertura) |
 | `vs_auditor` | Solo lectura en todo |
 | `vs_admin_bd` | Mantenimiento y respaldos; no tiene acceso a la clave de la elección |
 
