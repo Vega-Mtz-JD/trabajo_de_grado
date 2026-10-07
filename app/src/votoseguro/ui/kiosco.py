@@ -38,6 +38,9 @@ class VentanaKiosco(QWidget):
         # Con un solo monitor, panel y cabina se turnan la pantalla: la cabina pasa al frente al
         # habilitarse y se minimiza al terminar el votante. Con dos monitores queda fija en el segundo.
         self.una_pantalla = len(QGuiApplication.screens()) < 2 if una_pantalla is None else una_pantalla
+        # Con un solo monitor la cabina se muestra DENTRO de la ventana del panel (VentanaPrincipal
+        # la incrusta): así no depende de que el escritorio permita traer otra ventana al frente.
+        self.incrustada = False
         self.sesion: SesionVoto | None = None
         self.opciones: list[Opcion] = []
         self.elegida: Opcion | None = None
@@ -56,13 +59,14 @@ class VentanaKiosco(QWidget):
         self.pila.addWidget(self._pantalla_comprobante())
         capa = QVBoxLayout(self)
         capa.addWidget(self.pila)
-        salida = QPushButton("Salir del modo cabina (personal autorizado)")
+        salida = self.boton_salida = QPushButton("Salir del modo cabina (personal autorizado)")
         salida.setObjectName("salida")
         salida.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         salida.clicked.connect(self.pedir_salida)
         capa.addWidget(salida, alignment=Qt.AlignmentFlag.AlignRight)
-        self._temporizador = QTimer(self, singleShot=True, interval=SEGUNDOS_COMPROBANTE * 1000)
-        self._temporizador.timeout.connect(self.volver_a_espera)
+        self._restante = 0
+        self._temporizador = QTimer(self, interval=1000)
+        self._temporizador.timeout.connect(self._tic)
 
     # --- Pantallas -------------------------------------------------------------------------
 
@@ -70,7 +74,9 @@ class VentanaKiosco(QWidget):
         w = QWidget()
         capa = QVBoxLayout(w)
         capa.addStretch()
-        capa.addWidget(etiqueta("VOTO SEGURO", "titulo"), alignment=Qt.AlignmentFlag.AlignCenter)
+        titulo = etiqueta("VOTO SEGURO", "titulo")
+        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        capa.addWidget(titulo)
         self.texto_espera = etiqueta("Por favor, espere a que el personal de mesa habilite la cabina.", "grande")
         self.texto_espera.setAlignment(Qt.AlignmentFlag.AlignCenter)
         capa.addWidget(self.texto_espera)
@@ -98,7 +104,9 @@ class VentanaKiosco(QWidget):
         w = QWidget()
         capa = QVBoxLayout(w)
         capa.addStretch()
-        capa.addWidget(etiqueta("¿Confirma su voto?", "titulo"), alignment=Qt.AlignmentFlag.AlignCenter)
+        titulo = etiqueta("¿Confirma su voto?", "titulo")
+        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        capa.addWidget(titulo)
         self.texto_eleccion = etiqueta("", "grande")
         self.texto_eleccion.setAlignment(Qt.AlignmentFlag.AlignCenter)
         capa.addWidget(self.texto_eleccion)
@@ -123,15 +131,24 @@ class VentanaKiosco(QWidget):
         w = QWidget()
         capa = QVBoxLayout(w)
         capa.addStretch()
-        capa.addWidget(etiqueta("¡Su voto fue registrado!", "titulo"), alignment=Qt.AlignmentFlag.AlignCenter)
+        titulo = etiqueta("✔  ¡Gracias! Su voto fue registrado", "titulo")
+        titulo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        capa.addWidget(titulo)
         self.texto_comprobante = etiqueta("", "grande")
         self.texto_comprobante.setAlignment(Qt.AlignmentFlag.AlignCenter)
         capa.addWidget(self.texto_comprobante)
-        indicacion = etiqueta("Verifique su comprobante impreso y deposítelo en la urna.\n"
+        indicacion = etiqueta("Retire su comprobante impreso, verifíquelo y deposítelo en la urna.\n"
                               "No se lleve el comprobante.", "ayuda")
         indicacion.setAlignment(Qt.AlignmentFlag.AlignCenter)
         capa.addWidget(indicacion)
         capa.addStretch()
+        self.cuenta = etiqueta("", "cuenta")
+        self.cuenta.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        capa.addWidget(self.cuenta)
+        self.boton_finalizar = QPushButton("Finalizar   (Enter)")
+        self.boton_finalizar.setObjectName("confirmar")
+        self.boton_finalizar.clicked.connect(self.volver_a_espera)
+        capa.addWidget(self.boton_finalizar)
         return w
 
     # --- Flujo -----------------------------------------------------------------------------
@@ -186,29 +203,50 @@ class VentanaKiosco(QWidget):
         self.sesion = None
         self.texto_comprobante.setText(f"{comprobante.opcion.nombre}\nCódigo del comprobante: {comprobante.codigo}")
         self.pila.setCurrentIndex(3)
+        self.boton_finalizar.setFocus()
         self.voto_emitido.emit(comprobante)
+        self._restante = SEGUNDOS_COMPROBANTE
+        self._mostrar_cuenta()
         self._temporizador.start()
+
+    def _mostrar_cuenta(self) -> None:
+        self.cuenta.setText(f"Esta pantalla se cerrará sola en {self._restante} s")
+
+    def _tic(self) -> None:
+        self._restante -= 1
+        if self._restante <= 0:
+            self.volver_a_espera()
+        else:
+            self._mostrar_cuenta()
 
     def volver_a_espera(self) -> None:
         self._temporizador.stop()
         self.elegida = None
         self.pila.setCurrentIndex(0)
-        if self.una_pantalla and not self.pantalla_completa:
+        if self.una_pantalla and not self.pantalla_completa and not self.incrustada:
             self.showMinimized()          # devuelve la pantalla al panel de mesa
         self.estado_cambiado.emit("ESPERA")
+
+    def liberar(self) -> SesionVoto | None:
+        """El operador libera la cabina porque el votante se fue sin votar. La sesión se descarta
+        sin emitir voto (el votante sigue sin marcar y podría volver a identificarse)."""
+        sesion, self.sesion = self.sesion, None
+        self.volver_a_espera()
+        return sesion
 
     def traer_al_frente(self) -> None:
         """Muestra la cabina al frente y con el foco. Se llama desde el clic del operador en
         «Habilitar la cabina»: en Wayland, el escritorio solo permite activar una ventana como
         respuesta a una acción del usuario (xdg-activation), así que debe hacerse en ese momento."""
-        if self.pantalla_completa:
-            self.showFullScreen()
-        elif self.una_pantalla:
-            self.showMaximized()
-        else:
-            self.showNormal()
-        self.raise_()
-        self.activateWindow()
+        if not self.incrustada:
+            if self.pantalla_completa:
+                self.showFullScreen()
+            elif self.una_pantalla:
+                self.showMaximized()
+            else:
+                self.showNormal()
+            self.raise_()
+            self.activateWindow()
         primera = next((b for b in self.pila.currentWidget().findChildren(QPushButton)), None)
         if primera:
             primera.setFocus()
@@ -225,6 +263,8 @@ class VentanaKiosco(QWidget):
             self.confirmar()
         elif actual == 2 and tecla in (Qt.Key.Key_Escape, Qt.Key.Key_0):
             self.corregir()
+        elif actual == 3 and tecla in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            self.volver_a_espera()
         # Cualquier otra tecla (Alt+F4, Escape en otras pantallas…) se ignora.
 
     def closeEvent(self, evento) -> None:
@@ -233,7 +273,27 @@ class VentanaKiosco(QWidget):
         else:
             evento.ignore()
 
+    def incrustar(self) -> None:
+        """Modo de una pantalla: la cabina vive dentro de la ventana del panel."""
+        self.incrustada = True
+        self.boton_salida.setText("Personal autorizado: liberar la cabina")
+
     def pedir_salida(self) -> None:
+        if self.incrustada:
+            # Con el panel oculto, el personal libera la cabina desde aquí (votante que se fue sin votar).
+            if not self.ocupada:
+                return
+            dialogo = DialogoLogin(self.app.conn, self.bloqueo, {Rol.OPERADOR, Rol.ADMIN},
+                                   "Liberar la cabina", self)
+            if dialogo.exec() == QDialog.DialogCode.Accepted:
+                sesion = self.liberar()
+                from votoseguro.auditoria import bitacora
+
+                bitacora.registrar(self.app.conn, dialogo.usuario, "CABINA_LIBERADA",
+                                   {"eleccion": sesion.eleccion_id if sesion else None,
+                                    "ci": sesion.ci if sesion else None,
+                                    "motivo": "Liberada por el personal desde la cabina"})
+            return
         dialogo = DialogoLogin(self.app.conn, self.bloqueo, {Rol.OPERADOR, Rol.ADMIN},
                                "Salir del modo cabina", self)
         if dialogo.exec() == QDialog.DialogCode.Accepted:

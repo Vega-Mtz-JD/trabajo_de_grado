@@ -28,7 +28,9 @@ votoseguro verificar <paquete.vsx> --frase ...        # auditoría triple de un 
 docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/*.docx
 blockchain/network/up.sh && blockchain/bridge/iniciar.sh   # Fabric + puente (luego: demo --fabric)
 pytest -m fabric                                      # integración con Fabric real
-votoseguro-ui [--fabric]                              # interfaz gráfica (panel de mesa + kiosco)
+votoseguro-ui [--fabric] [--camara auto|web|simulada]  # interfaz gráfica (panel de mesa + kiosco)
+scripts/iniciar_votoseguro.sh [--fabric]              # inicia la interfaz comprobando requisitos
+votoseguro preparar-demo --votantes 5 [--abrir]       # elección de demostración lista para la interfaz
 votoseguro bd estado|migrar                           # migraciones del esquema (ADR-011)
 VOTOSEGURO_CAPTURAS=../docs/adjuntos/ui QT_QPA_PLATFORM=offscreen pytest tests/test_ui.py   # capturas
 ```

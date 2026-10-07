@@ -79,18 +79,35 @@ class VentanaPrincipal(QMainWindow):
         contenido.addLayout(cabecera)
         contenido.addWidget(self.pila, 1)
         cuerpo.addLayout(contenido, 1)
-        central = QWidget()
-        central.setLayout(cuerpo)
-        self.setCentralWidget(central)
+        self.panel = QWidget()
+        self.panel.setLayout(cuerpo)
+        if kiosco.una_pantalla:
+            # Un solo monitor: panel y cabina se turnan dentro de ESTA ventana (no hay que traer otra
+            # ventana al frente, lo que algunos escritorios —p. ej. GNOME con Wayland— impiden).
+            self.pantallas = QStackedWidget()
+            self.pantallas.addWidget(self.panel)
+            self.pantallas.addWidget(kiosco)
+            kiosco.incrustar()
+            self.setCentralWidget(self.pantallas)
+        else:
+            self.pantallas = None
+            self.setCentralWidget(self.panel)
         self._cargar_elecciones()
         self.navegacion.setCurrentRow(0)
         kiosco.estado_cambiado.connect(self._cabina_libre)
 
     def _cabina_libre(self, estado: str) -> None:
-        """Con un solo monitor, al terminar el votante el panel vuelve al frente."""
-        if estado == "ESPERA" and self.kiosco.una_pantalla:
-            if self.isMinimized():
-                self.showMaximized()
+        """Con un solo monitor: al habilitar, la ventana pasa a mostrar la cabina a pantalla completa;
+        al terminar el votante, vuelve el panel de mesa."""
+        if self.pantallas is None:
+            return
+        if estado == "VOTANDO":
+            self.pantallas.setCurrentWidget(self.kiosco)
+            self.showFullScreen()
+            self.kiosco.traer_al_frente()
+        else:
+            self.pantallas.setCurrentWidget(self.panel)
+            self.showMaximized()
             self.raise_()
             self.activateWindow()
 

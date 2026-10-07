@@ -82,6 +82,7 @@ QLabel#titulo {{ font-size: 38px; font-weight: 600; color: {TEXTO}; }}
 QLabel#grande {{ font-size: 34px; font-weight: 600; color: {TEXTO}; }}
 QLabel#ayuda {{ font-size: 22px; color: {SECUNDARIO}; }}
 QLabel#teclas {{ font-size: 22px; color: {SECUNDARIO}; padding: 8px; }}
+QLabel#cuenta {{ font-size: 20px; color: {SECUNDARIO}; padding: 6px; }}
 QPushButton#opcion {{ text-align: left; padding: 22px 28px; border: 2px solid {BORDE}; border-radius: 16px;
                       background: {SUPERFICIE}; color: {TEXTO}; font-size: 30px; font-weight: 500; }}
 QPushButton#opcion:hover, QPushButton#opcion:focus {{ border: 3px solid {ACENTO}; background: {ACENTO_SUAVE}; }}

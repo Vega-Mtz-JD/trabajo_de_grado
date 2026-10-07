@@ -136,6 +136,39 @@ def _bd(args) -> int:
     return 0
 
 
+def _preparar_demo(args) -> int:
+    import getpass
+
+    from votoseguro.cripto.llavero import FraseIncorrecta, Llavero
+    from votoseguro.hardware.camara import CamaraSimulada
+    from votoseguro.hardware.huella import LectorSimulado
+    from votoseguro.hardware.impresora import ImpresoraPDF
+    from votoseguro.servicios import demo
+    from votoseguro.servicios.base import Contexto
+
+    ruta = Path(args.llavero).expanduser()
+    if not ruta.exists():
+        sys.exit(f"No existe el llavero {ruta}: abra primero la interfaz (votoseguro-ui) para crearlo.")
+    frase = args.frase or getpass.getpass("Frase del llavero del equipo: ")
+    try:
+        llavero = Llavero.abrir(ruta, frase)
+    except FraseIncorrecta:
+        sys.exit("Frase incorrecta.")
+    with conectar(args.dsn, autocommit=True) as conn:
+        ctx = Contexto(conn, llavero, LectorSimulado(), ImpresoraPDF(Path(args.salida) / "impresiones"),
+                       "preparar-demo", CamaraSimulada())
+        r = demo.preparar_para_interfaz(ctx, votantes=args.votantes, abrir=args.abrir)
+    print(f"\nElección de demostración lista ({'ABIERTA' if r.abierta else 'LISTA: ábrala desde Jornada de votación'}).")
+    print(f"Identificador: {r.eleccion_id}\n\nVotantes empadronados (CI para la mesa de identificación):")
+    for ci, nombres, apellidos in r.personas:
+        print(f"  {ci}   {apellidos}, {nombres}")
+    print("\nPartes de la clave para el escrutinio (SOLO DEMOSTRACIÓN; use 3 cualesquiera):")
+    for parte in r.partes:
+        print(f"  {parte}")
+    print(f"\nHojas impresas (custodios, constancias, zerésima): {Path(args.salida).resolve() / 'impresiones'}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="votoseguro", description=__doc__.splitlines()[0])
     parser.add_argument("--version", action="version", version=f"votoseguro {__version__}")
@@ -176,6 +209,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("eleccion_global")
     p.add_argument("mesa")
     p.set_defaults(funcion=_ledger)
+
+    p = sub.add_parser("preparar-demo", help="deja una elección lista para mostrar la votación en la interfaz")
+    p.add_argument("--votantes", type=int, default=5, help="votantes de ejemplo (máx. 10)")
+    p.add_argument("--abrir", action="store_true", help="dejar la mesa ya abierta (sin mostrar la apertura)")
+    p.add_argument("--llavero", default="~/.local/share/votoseguro/llavero.vsk", help="llavero de la interfaz")
+    p.add_argument("--frase", help="frase del llavero (si no se indica, se pide)")
+    p.add_argument("--salida", default="salida_ui", help="carpeta de la impresora simulada")
+    p.set_defaults(funcion=_preparar_demo)
 
     p = sub.add_parser("bd", help="migraciones del esquema de la base de datos")
     p.add_argument("accion", choices=["estado", "migrar"])

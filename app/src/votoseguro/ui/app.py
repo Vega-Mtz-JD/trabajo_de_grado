@@ -55,6 +55,22 @@ def abrir_llavero(ruta: Path) -> Llavero | None:
     return None
 
 
+def elegir_camara(opcion: str):
+    """Cámara web real (Qt Multimedia) si existe y no se pidió la simulada."""
+    if opcion != "simulada":
+        from votoseguro.hardware.camara import CamaraNoDisponible
+        from votoseguro.hardware.camara_qt import CamaraQt, hay_camara
+
+        if hay_camara():
+            try:
+                return CamaraQt()
+            except CamaraNoDisponible:
+                pass
+        if opcion == "web":
+            QMessageBox.warning(None, "Cámara", "No se encontró una cámara web: se usará la cámara simulada.")
+    return CamaraSimulada()
+
+
 def iniciar(argv: list[str] | None = None):
     """Prepara la aplicación (llavero, primer uso, ingreso, ventanas). Devuelve
     ``(qapp, ventana, kiosco)`` o ``None`` si el usuario canceló."""
@@ -65,6 +81,8 @@ def iniciar(argv: list[str] | None = None):
                         help="carpeta de la impresora simulada (PDF)")
     parser.add_argument("--kiosco", action="store_true", help="cabina en pantalla completa sin bordes (producción)")
     parser.add_argument("--fabric", action="store_true", help="anclar en Hyperledger Fabric mediante el puente")
+    parser.add_argument("--camara", choices=["auto", "web", "simulada"], default="auto",
+                        help="cámara web real o simulada (auto: la real si existe)")
     args = parser.parse_args(argv)
 
     qapp = QApplication.instance() or QApplication(sys.argv[:1])
@@ -92,19 +110,19 @@ def iniciar(argv: list[str] | None = None):
         except PuenteNoDisponible as e:
             QMessageBox.warning(None, "Hyperledger Fabric", f"{e}\nLos anclajes quedarán en cola.")
 
-    sesion = SesionApp(conn, llavero, LectorSimulado(), CamaraSimulada(), ImpresoraPDF(args.salida / "impresiones"),
-                       args.salida, puente, simulado=True, usuario=login.usuario, rol=login.rol)
+    sesion = SesionApp(conn, llavero, LectorSimulado(), elegir_camara(args.camara),
+                       ImpresoraPDF(args.salida / "impresiones"), args.salida, puente, simulado=True,
+                       usuario=login.usuario, rol=login.rol)
     kiosco = VentanaKiosco(sesion, pantalla_completa=args.kiosco)
     ventana = VentanaPrincipal(sesion, kiosco)
     pantallas = qapp.screens()
     if len(pantallas) > 1:   # cabina en el segundo monitor
         kiosco.setGeometry(pantallas[1].availableGeometry())
         kiosco.setScreen(pantallas[1])
-    if args.kiosco:
+    if kiosco.incrustada:
+        pass                        # un solo monitor: la cabina se muestra dentro del panel
+    elif args.kiosco:
         kiosco.showFullScreen()
-    elif kiosco.una_pantalla:
-        kiosco.resize(900, 760)
-        kiosco.showMinimized()      # un solo monitor: la cabina aparece al habilitarla
     else:
         kiosco.show()
     ventana.showMaximized()

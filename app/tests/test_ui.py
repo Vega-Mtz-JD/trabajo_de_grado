@@ -36,6 +36,13 @@ FRASE = "frase-de-prueba-larga"
 CAPTURAS = os.environ.get("VOTOSEGURO_CAPTURAS")
 
 
+@pytest.fixture(autouse=True)
+def lector_rapido(monkeypatch):
+    """La ventana del lector de huella dura 1,2 s en uso real; en las pruebas, casi nada."""
+    from votoseguro.ui import dialogo_huella
+    monkeypatch.setattr(dialogo_huella, "DURACION_MS", 5)
+
+
 @pytest.fixture
 def dialogos(monkeypatch, tmp_path):
     """Sustituye los diálogos modales: registra los mensajes y responde lo que la prueba indique."""
@@ -341,8 +348,8 @@ def test_kiosco_tecla_cero_corrige(qtbot, sesion):
 
 
 def test_cabina_pasa_al_frente_y_devuelve_la_pantalla(qtbot, sesion):
-    """Con un solo monitor: al habilitar, la cabina se maximiza y activa; al terminar se minimiza
-    y el panel vuelve al frente. Con dos monitores la cabina no se minimiza."""
+    """Un monitor: la cabina vive DENTRO del panel; al habilitarla la ventana muestra la cabina a
+    pantalla completa y, al terminar, vuelve el panel. Dos monitores: ventana propia, sin minimizar."""
     from votoseguro.servicios import configuracion
     from votoseguro.servicios.configuracion import Candidatura
     from votoseguro.servicios.votacion import SesionVoto
@@ -356,13 +363,78 @@ def test_cabina_pasa_al_frente_y_devuelve_la_pantalla(qtbot, sesion):
         qtbot.addWidget(ventana)
         qtbot.addWidget(kiosco)
         ventana.show()
-        kiosco.showMinimized()
+        if not una_pantalla:
+            kiosco.showMinimized()
         kiosco.habilitar(SesionVoto(eid, "1234567", "HUELLA"))
         assert kiosco.isVisible() and not kiosco.isMinimized()
         assert kiosco.focusWidget() is not None and kiosco.focusWidget().objectName() == "opcion"
         if una_pantalla:
-            assert kiosco.windowState() & Qt.WindowState.WindowMaximized
+            assert kiosco.incrustada and ventana.pantallas.currentWidget() is kiosco
+            assert ventana.windowState() & Qt.WindowState.WindowFullScreen
         kiosco.sesion = None          # el votante terminó (sin emitir, para esta prueba)
         kiosco.volver_a_espera()
-        assert kiosco.isMinimized() == una_pantalla
+        if una_pantalla:
+            assert ventana.pantallas.currentWidget() is ventana.panel
+        else:
+            assert not kiosco.isMinimized()
         assert not ventana.isMinimized()
+
+
+def test_comprobante_con_cuenta_regresiva_y_finalizar(qtbot, sesion):
+    from votoseguro.servicios import apertura, configuracion, empadronamiento
+    from votoseguro.servicios.configuracion import Candidatura
+    from votoseguro.servicios.votacion import SesionVoto
+
+    app = sesion()
+    ctx = app.ctx()
+    eid = configuracion.crear_eleccion(ctx, "Prueba de comprobante", [Candidatura("A", "Ana")], bits=2048).eleccion_id
+    empadronamiento.iniciar(ctx, eid)
+    app.preparar_simulacion("4501001")
+    empadronamiento.registrar_votante(ctx, eid, "4501001", "Rosa", "Mamani")
+    empadronamiento.cerrar_padron(ctx, eid)
+    apertura.abrir(ctx, eid)
+    assert any(d.nombre_archivo == "constancia_4501001" and d.imagen for d in app.impresora.documentos)
+    kiosco = VentanaKiosco(app, una_pantalla=False)
+    qtbot.addWidget(kiosco)
+    kiosco.habilitar(SesionVoto(eid, "4501001", "HUELLA"))
+    qtbot.keyClick(kiosco, Qt.Key.Key_1)
+    qtbot.keyClick(kiosco, Qt.Key.Key_Return)
+    assert kiosco.pila.currentIndex() == 3 and "7 s" in kiosco.cuenta.text()
+    kiosco._tic()
+    assert "6 s" in kiosco.cuenta.text()
+    qtbot.keyClick(kiosco, Qt.Key.Key_Return)          # Finalizar (Enter)
+    assert kiosco.pila.currentIndex() == 0
+
+
+def test_liberar_cabina_cuando_el_votante_se_va_sin_votar(qtbot, sesion, dialogos):
+    from votoseguro.servicios import configuracion, empadronamiento, apertura
+    from votoseguro.servicios.configuracion import Candidatura
+
+    app = sesion()
+    ctx = app.ctx()
+    eid = configuracion.crear_eleccion(ctx, "Prueba de abandono", [Candidatura("A", "Ana")], bits=2048).eleccion_id
+    empadronamiento.iniciar(ctx, eid)
+    app.preparar_simulacion("4501001")
+    empadronamiento.registrar_votante(ctx, eid, "4501001", "Rosa", "Mamani")
+    empadronamiento.cerrar_padron(ctx, eid)
+    apertura.abrir(ctx, eid)
+    app.eleccion_id = eid
+    kiosco = VentanaKiosco(app)
+    ventana = VentanaPrincipal(app, kiosco)
+    qtbot.addWidget(ventana)
+    qtbot.addWidget(kiosco)
+    ventana.ir_a(PaginaJornada)
+    jornada = ventana.pagina_actual()
+    jornada.ci.setText("4501001")
+    qtbot.mouseClick(boton(jornada, "Buscar"), Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(jornada.boton_huella, Qt.MouseButton.LeftButton)
+    qtbot.mouseClick(jornada.boton_cabina, Qt.MouseButton.LeftButton)
+    assert kiosco.ocupada and not jornada.boton_liberar.isHidden()
+
+    dialogos["textos"].append("El votante se retiró sin votar")
+    qtbot.mouseClick(jornada.boton_liberar, Qt.MouseButton.LeftButton)
+    assert not kiosco.ocupada and jornada.boton_liberar.isHidden()
+    assert repo.contar_votos(app.conn, eid) == 0                       # no hubo voto
+    assert repo.obtener_votante(app.conn, eid, "4501001")["ya_voto"] is False
+    eventos = [e for e in repo.bitacora_completa(app.conn) if e["evento"] == "CABINA_LIBERADA"]
+    assert eventos and eventos[0]["detalle"]["motivo"] == "El votante se retiró sin votar"

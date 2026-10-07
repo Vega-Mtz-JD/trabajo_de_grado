@@ -112,6 +112,23 @@ def main():
         b.paragraph_format.first_line_indent = Cm(-1.27)
         b.paragraph_format.line_spacing_rule = WD_LINE_SPACING.DOUBLE
 
+    # Bloques de código y diagramas de texto: fuente de ancho fijo, interlineado simple, sin justificar
+    # (si no, los diagramas ASCII de los manuales se deforman).
+    def estilo(nombre, tipo):
+        return estilos.get(nombre) or doc.styles.add_style(nombre, tipo)
+
+    codigo = estilo("Source Code", WD_STYLE_TYPE.PARAGRAPH)
+    codigo.font.name = "Liberation Mono"
+    codigo.element.get_or_add_rPr().rFonts.set(qn("w:eastAsia"), "Liberation Mono")
+    codigo.font.size = Pt(8)
+    pf = codigo.paragraph_format
+    pf.line_spacing_rule = WD_LINE_SPACING.SINGLE
+    pf.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    pf.space_before = pf.space_after = Pt(0)
+    caracter = estilo("Verbatim Char", WD_STYLE_TYPE.CHARACTER)
+    caracter.font.name = "Liberation Mono"
+    caracter.font.size = Pt(9)
+
     doc.save(DESTINO)
     tmp.unlink()
     print(f"Plantilla creada: {DESTINO}")

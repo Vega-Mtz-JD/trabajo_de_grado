@@ -11,7 +11,10 @@
 - [[informe/05-conclusiones|Cap. V — Conclusiones y referencias]]
 - [[informe/06-anexos|Anexos]]
 
-**Perfil** = Cap. I + II, 40–80 págs. → [[bitacora/perfil-v1|borrador v1 (estado y pendientes)]]. **Final** = 90–150 págs. Exportar: `docs/exportar/exportar_word.sh [perfil]`.
+**Perfil** = Cap. I + II, 40–80 págs. → [[bitacora/perfil-v1|borrador v1 (estado y pendientes)]] · [[bitacora/revision-perfil-v1|revisión del agente revisor-tg]]. **Final** = 90–150 págs. Exportar: `docs/exportar/exportar_word.sh [perfil]`.
+
+## Manuales
+- [[manuales/manual-usuario|Manual de usuario y guía de capacitación]] · [[manuales/manual-tecnico|Manual técnico]] (Word: `exportar_word.sh manuales`)
 
 ## Diseño técnico
 - [[requerimientos/vision-del-sistema|📋 Visión del sistema y requerimientos (RF/RNF)]]

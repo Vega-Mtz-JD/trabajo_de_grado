@@ -48,3 +48,18 @@ def test_demo_y_verificar_por_cli(bd, tmp_path, capsys):
     assert cli.main(["verificar", str(paquete), "--frase", "demo-votoseguro-2026",
                      "--papel", "A=999"]) == 1
     assert "DISCREPANCIAS" in capsys.readouterr().out
+
+
+def test_preparar_demo_para_la_interfaz(bd, tmp_path, capsys):
+    from votoseguro.cripto.llavero import Llavero
+
+    llavero = tmp_path / "llavero.vsk"
+    Llavero.nuevo().guardar(llavero, "frase-del-llavero-1")
+    dsn = bd.dsn + " user=vs_app"
+    assert cli.main(["--dsn", dsn, "preparar-demo", "--votantes", "3", "--abrir", "--llavero", str(llavero),
+                     "--frase", "frase-del-llavero-1", "--salida", str(tmp_path / "ui")]) == 0
+    salida = capsys.readouterr().out
+    assert "ABIERTA" in salida and "4501003" in salida and salida.count("VS1-") == 5
+    assert (tmp_path / "ui" / "impresiones").glob("*constancia_4501001.pdf")
+    with pytest.raises(SystemExit):
+        cli.main(["--dsn", dsn, "preparar-demo", "--llavero", str(llavero), "--frase", "otra-frase-mala"])

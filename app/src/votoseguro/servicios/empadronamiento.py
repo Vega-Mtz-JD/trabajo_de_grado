@@ -8,6 +8,7 @@ en todas menos una antes de la apertura.
 import json
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
@@ -19,6 +20,7 @@ from votoseguro.cripto.llavero import b64, cifrar_con_frase, descifrar_con_frase
 from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado
 from votoseguro.hardware.huella import LectorNoDisponible
+from votoseguro.hardware.impresora import Documento
 from votoseguro.servicios.base import Contexto, ErrorServicio, HardwareNoDisponible, exigir_estado
 
 CONTEXTO_RESUMEN = b"votoseguro:resumen-padron"
@@ -33,8 +35,9 @@ def iniciar(ctx: Contexto, eleccion_id: str) -> None:
 
 def registrar_votante(ctx: Contexto, eleccion_id: str, ci: str, nombres: str, apellidos: str) -> None:
     """Toma la foto de registro y la huella (la persona debe estar frente a la cámara y con el
-    dedo sobre el lector) y agrega al votante al padrón. Foto y plantilla se guardan cifradas."""
-    exigir_estado(ctx, eleccion_id, Estado.EMPADRONAMIENTO)
+    dedo sobre el lector) y agrega al votante al padrón. Foto y plantilla se guardan cifradas.
+    Imprime la constancia de empadronamiento para el votante."""
+    eleccion = exigir_estado(ctx, eleccion_id, Estado.EMPADRONAMIENTO)
     foto = ctx.tomar_foto()
     try:
         plantilla = ctx.lector.capturar()
@@ -46,6 +49,16 @@ def registrar_votante(ctx: Contexto, eleccion_id: str, ci: str, nombres: str, ap
             ctx.llavero.cifrar_personal("plantilla", eleccion_id, ci, plantilla),
             ctx.llavero.cifrar_personal("foto_registro", eleccion_id, ci, foto))
         bitacora.registrar(ctx.conn, ctx.actor, "VOTANTE_REGISTRADO", {"eleccion": eleccion_id, "ci": ci})
+    ctx.impresora.imprimir_documento(Documento(
+        "CONSTANCIA DE EMPADRONAMIENTO",
+        [f"Elección: {eleccion.nombre}", f"Mesa: {eleccion.mesa}", "",
+         f"Cédula de identidad: {ci}", f"Apellidos: {apellidos.strip()}", f"Nombres: {nombres.strip()}",
+         f"Fecha de registro: {datetime.now().strftime('%d/%m/%Y %H:%M')}", "",
+         "Huella dactilar: registrada (se guarda solo la plantilla, cifrada)",
+         "Fotografía: registrada (cifrada)", "",
+         f"El día de la votación preséntese en la mesa {eleccion.mesa} con su cédula de identidad.",
+         "", "Firma del operador: ______________________"],
+        None, f"constancia_{ci}", foto))
 
 
 def inhabilitar_votante(ctx: Contexto, eleccion_id: str, ci: str, motivo: str) -> None:

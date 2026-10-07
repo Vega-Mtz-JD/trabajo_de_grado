@@ -9,12 +9,15 @@ from PySide6.QtWidgets import (
     QCheckBox, QFormLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QPushButton, QVBoxLayout,
 )
 
+from votoseguro.auditoria import bitacora
 from votoseguro.datos import repositorio as repo
 from votoseguro.datos.conexion import VotanteNoHabilitado
 from votoseguro.dominio.modelos import Estado, Rol
 from votoseguro.servicios import apertura, cierre, votacion
 from votoseguro.ui.comun import confirmar, ejecutar, etiqueta, imagen, mensaje
+from votoseguro.ui.dialogo_huella import leer_huella
 from votoseguro.ui.estilo import ROJO, VERDE
+from votoseguro.ui.vista_camara import VistaCamara
 from votoseguro.ui.paginas.base import Pagina, pedir_texto
 
 
@@ -73,14 +76,21 @@ class PaginaJornada(Pagina):
         izquierda.addRow(self.boton_cabina)
         self.estado_cabina = etiqueta("Cabina: libre", "subtitulo")
         izquierda.addRow(self.estado_cabina)
+        self.boton_liberar = QPushButton("Liberar la cabina (el votante no votó)…")
+        self.boton_liberar.setObjectName("secundario")
+        self.boton_liberar.setVisible(False)
+        self.boton_liberar.clicked.connect(self.liberar_cabina)
+        izquierda.addRow(self.boton_liberar)
         fila.addLayout(izquierda, 3)
         fotos = QHBoxLayout()
-        self.foto_registro, self.foto_presencia = QLabel(), QLabel()
-        for foto, texto in ((self.foto_registro, "Foto de registro"), (self.foto_presencia, "Foto de hoy")):
+        self.foto_registro = QLabel()
+        self.foto_registro.setPixmap(imagen(None, 170))
+        self.foto_registro.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.foto_presencia = VistaCamara(self.app.camara, 220)   # en vivo; al identificar, la foto de hoy
+        for widget, texto in ((self.foto_registro, "Foto de registro"),
+                              (self.foto_presencia, "Foto de hoy")):
             columna = QVBoxLayout()
-            foto.setPixmap(imagen(None, 170))
-            foto.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            columna.addWidget(foto)
+            columna.addWidget(widget, alignment=Qt.AlignmentFlag.AlignCenter)
             columna.addWidget(etiqueta(texto, "ayuda"), alignment=Qt.AlignmentFlag.AlignCenter)
             columna.addStretch()
             fotos.addLayout(columna)
@@ -110,6 +120,8 @@ class PaginaJornada(Pagina):
         if e is None:
             return
         lista, abierta = e.estado == Estado.LISTA, e.estado == Estado.ABIERTA
+        if abierta and self.sesion is None:
+            self.foto_presencia.activar()      # la cámara de la mesa en vivo
         self.caja_apertura.setVisible(lista)
         self.caja_identificacion.setVisible(abierta)
         self.boton_cerrar.setVisible(abierta)
@@ -128,13 +140,14 @@ class PaginaJornada(Pagina):
         self.sesion, self.ci_actual = None, None
         self.datos_votante.setText("")
         self.foto_registro.setPixmap(imagen(None, 170))
-        self.foto_presencia.setPixmap(imagen(None, 170))
+        self.foto_presencia.activar()
         self.boton_huella.setEnabled(False)
         self.boton_excepcion.setEnabled(False)
         self.boton_cabina.setEnabled(False)
 
     def _estado_cabina(self, estado: str) -> None:
         self.estado_cabina.setText("Cabina: OCUPADA (votando)" if estado == "VOTANDO" else "Cabina: libre")
+        self.boton_liberar.setVisible(estado == "VOTANDO")
         if estado == "ESPERA":
             self.ci.setFocus()
 
@@ -175,8 +188,8 @@ class PaginaJornada(Pagina):
         foto = self.app.conn.execute("SELECT foto_cifrada FROM padron.presencia WHERE eleccion_id = %s AND ci = %s",
                                      (self.app.eleccion_id, self.ci_actual)).fetchone()
         if foto:
-            self.foto_presencia.setPixmap(imagen(self.app.llavero.descifrar_personal(
-                "foto_presencia", self.app.eleccion_id, self.ci_actual, bytes(foto[0])), 170))
+            self.foto_presencia.congelar(self.app.llavero.descifrar_personal(
+                "foto_presencia", self.app.eleccion_id, self.ci_actual, bytes(foto[0])))
         self.boton_huella.setEnabled(False)
         self.boton_excepcion.setEnabled(False)
         self.boton_cabina.setEnabled(not self.kiosco.ocupada)
@@ -186,8 +199,10 @@ class PaginaJornada(Pagina):
     def verificar_huella(self) -> None:
         self.app.preparar_simulacion(self.ci_actual, huella_coincide=not self.simular_falla.isChecked())
         # Si la huella falla 3 veces, «ejecutar» muestra el motivo y devuelve None.
-        sesion = ejecutar(self, lambda: votacion.autenticar_huella(self.app.ctx(), self.app.eleccion_id,
-                                                                   self.ci_actual))
+        sesion = ejecutar(self, lambda: leer_huella(
+            self, "Apoye el dedo en el lector… (hasta 3 intentos)",
+            lambda: votacion.autenticar_huella(self.app.ctx(), self.app.eleccion_id, self.ci_actual),
+            "Huella verificada · foto de hoy tomada", "La huella no coincide"))
         if sesion:
             self._tras_autenticar(sesion)
         else:
@@ -211,6 +226,21 @@ class PaginaJornada(Pagina):
         self.kiosco.habilitar(self.sesion)
         self.ci.clear()
         self._limpiar_votante()
+
+    def liberar_cabina(self) -> None:
+        if not self.kiosco.ocupada:
+            return
+        motivo = pedir_texto(self, "Liberar la cabina",
+                             "Motivo (p. ej. «el votante se retiró sin votar»):")
+        if not motivo:
+            return
+        if not confirmar(self, "Liberar la cabina", "El votante NO habrá votado. ¿Liberar la cabina?"):
+            return
+        sesion = self.kiosco.liberar()
+        bitacora.registrar(self.app.conn, self.app.usuario, "CABINA_LIBERADA",
+                           {"eleccion": self.app.eleccion_id, "ci": sesion.ci if sesion else None,
+                            "motivo": motivo})
+        self.ventana.barra("Cabina liberada: el votante no votó")
 
     def reimprimir(self) -> None:
         if self.ultimo_sin_imprimir and ejecutar(self, lambda: votacion.reimprimir(self.app.ctx(),

@@ -28,6 +28,7 @@ class Documento:
     lineas: list[str]
     qr: str | None = None          # texto a codificar en QR (hashes, parte de custodio)
     nombre_archivo: str = "documento"
+    imagen: bytes | None = None    # foto (PNG/JPEG), p. ej. en la constancia de empadronamiento
 
 
 class Impresora(ABC):
@@ -136,6 +137,15 @@ def pdf_documento(ruta: Path, doc: Documento) -> None:
     y = alto - 2.5 * cm
     c.setFont("Helvetica-Bold", 14)
     c.drawCentredString(ancho / 2, y, doc.titulo)
+    if doc.imagen:
+        import io
+
+        from reportlab.lib.utils import ImageReader
+
+        foto = ImageReader(io.BytesIO(doc.imagen))
+        fw, fh = foto.getSize()
+        w = 4.5 * cm
+        c.drawImage(foto, ancho - 2.5 * cm - w, y - 0.6 * cm - w * fh / fw, w, w * fh / fw)
     y -= 1 * cm
     c.setFont("Courier", 9)
     for linea in doc.lineas:

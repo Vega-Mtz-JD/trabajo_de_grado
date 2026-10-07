@@ -189,3 +189,45 @@ def _empadronar(urna: Urna, ci: str, nombres: str, apellidos: str) -> None:
     empadronamiento.registrar_votante(urna.ctx, urna.eleccion_id, ci, nombres, apellidos)
     urna.ctx.lector.tasa_rechazo = 0.15
     urna.padron.append(ci)
+
+
+# --- Demostración en la interfaz ----------------------------------------------------------------
+
+PERSONAS_DEMO = [
+    ("4501001", "Rosa", "Mamani Apaza"), ("4501002", "Luis", "Quispe Choque"),
+    ("4501003", "Elena", "Condori Flores"), ("4501004", "Jorge", "Limachi Huanca"),
+    ("4501005", "Lucía", "Ticona Copa"), ("4501006", "Mario", "Callisaya Poma"),
+    ("4501007", "Gladys", "Apaza Rojas"), ("4501008", "René", "Cruz Vargas"),
+    ("4501009", "Norma", "Choque Mamani"), ("4501010", "Hugo", "Flores Quispe"),
+]
+
+
+@dataclass
+class DemostracionPreparada:
+    eleccion_id: str
+    personas: list[tuple[str, str, str]]
+    partes: list[str]
+    abierta: bool
+
+
+def preparar_para_interfaz(ctx: Contexto, *, votantes: int = 5, abrir: bool = False,
+                           bits: int = 3072) -> DemostracionPreparada:
+    """Deja una elección lista para mostrar la votación en la interfaz: definida, con la mesa
+    instalada, el padrón empadronado (fotos y huellas simuladas) y cerrado, y opcionalmente abierta.
+    Debe usar el MISMO llavero que la interfaz, para que ella pueda leer las fotos y huellas."""
+    personas = PERSONAS_DEMO[:max(1, min(votantes, len(PERSONAS_DEMO)))]
+    creada = configuracion.crear_eleccion(
+        ctx, "Demostración — Elección de Directorio 2026", CANDIDATURAS, bits=bits,
+        custodios=["Presidente de mesa", "Jurado A", "Jurado B", "Delegado auditor", "Delegado empresa"])
+    eid = creada.eleccion_id
+    empadronamiento.iniciar(ctx, eid)
+    for ci, nombres, apellidos in personas:
+        if isinstance(ctx.camara, CamaraSimulada):
+            ctx.camara.colocar_persona(ci)
+        if isinstance(ctx.lector, LectorSimulado):
+            ctx.lector.colocar_dedo(ci)
+        empadronamiento.registrar_votante(ctx, eid, ci, nombres, apellidos)
+    empadronamiento.cerrar_padron(ctx, eid)
+    if abrir:
+        apertura.abrir(ctx, eid)
+    return DemostracionPreparada(eid, personas, [p.a_texto() for p in creada.partes], abrir)
