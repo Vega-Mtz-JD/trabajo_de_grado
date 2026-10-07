@@ -62,7 +62,7 @@ def dialogos(monkeypatch, tmp_path):
 @pytest.fixture
 def sesion(bd, tmp_path):
     def crear(rol=Rol.ADMIN, usuario="admin.prueba"):
-        return SesionApp(bd("vs_app", autocommit=True), Llavero.nuevo(), LectorSimulado(), CamaraSimulada(),
+        return SesionApp(bd("vs_app", autocommit=True), Llavero.nuevo(), LectorSimulado(abierto=False), CamaraSimulada(),
                          ImpresoraMemoria(), tmp_path, None, simulado=True, usuario=usuario, rol=rol)
     return crear
 
@@ -75,6 +75,36 @@ def captura(widget, nombre):
 
 def boton(widget, texto) -> QPushButton:
     return next(b for b in widget.findChildren(QPushButton) if b.text().startswith(texto))
+
+
+def clic(qtbot, b: QPushButton) -> None:
+    assert b.isEnabled(), f"«{b.text()}» está deshabilitado"
+    qtbot.mouseClick(b, Qt.MouseButton.LeftButton)
+
+
+def conectar_lector(qtbot, panel) -> None:
+    if not panel.conectado():
+        clic(qtbot, panel.boton_conectar)
+
+
+def empadronar(qtbot, padron, ci, nombres, apellidos) -> None:
+    """Flujo del operador: datos → encender cámara y tomar foto → conectar lector y capturar → registrar."""
+    qtbot.keyClicks(padron.ci, ci)
+    qtbot.keyClicks(padron.nombres, nombres)
+    qtbot.keyClicks(padron.apellidos, apellidos)
+    assert not padron.boton_registrar.isEnabled()
+    clic(qtbot, padron.camara.boton_encender)
+    clic(qtbot, padron.camara.boton_foto)
+    conectar_lector(qtbot, padron.lector)
+    clic(qtbot, padron.lector.boton_accion)
+    clic(qtbot, padron.boton_registrar)
+
+
+def foto_de_hoy(qtbot, jornada) -> None:
+    assert not jornada.boton_huella.isEnabled()          # primero la foto de hoy
+    conectar_lector(qtbot, jornada.lector)
+    clic(qtbot, jornada.foto_presencia.boton_encender)
+    clic(qtbot, jornada.foto_presencia.boton_foto)
 
 
 # --- Ingreso del personal ----------------------------------------------------------------------
@@ -158,10 +188,7 @@ def test_eleccion_completa_desde_la_interfaz(qtbot, sesion, dialogos, tmp_path):
     qtbot.mouseClick(padron.boton_iniciar, Qt.MouseButton.LeftButton)
     for ci, nombres, apellidos in [("4501001", "Rosa", "Mamani Apaza"), ("4501002", "Luis", "Quispe Choque"),
                                    ("4501003", "Elena", "Condori Flores")]:
-        padron.ci.setText(ci)
-        padron.nombres.setText(nombres)
-        padron.apellidos.setText(apellidos)
-        qtbot.mouseClick(padron.boton_registrar, Qt.MouseButton.LeftButton)
+        empadronar(qtbot, padron, ci, nombres, apellidos)
     assert padron.tabla.rowCount() == 3 and not padron.foto.pixmap().isNull()
     captura(ventana, "02_empadronamiento")
     qtbot.mouseClick(padron.boton_cerrar, Qt.MouseButton.LeftButton)
@@ -177,6 +204,7 @@ def test_eleccion_completa_desde_la_interfaz(qtbot, sesion, dialogos, tmp_path):
     # 4. Votante 1: huella correcta, vota con el ratón
     jornada.ci.setText("4501001")
     qtbot.mouseClick(boton(jornada, "Buscar"), Qt.MouseButton.LeftButton)
+    foto_de_hoy(qtbot, jornada)
     qtbot.mouseClick(jornada.boton_huella, Qt.MouseButton.LeftButton)
     assert jornada.boton_cabina.isEnabled()
     captura(ventana, "04_identificacion")
@@ -193,6 +221,7 @@ def test_eleccion_completa_desde_la_interfaz(qtbot, sesion, dialogos, tmp_path):
     # 5. Votante 2: la huella falla 3 veces → excepción manual; vota con el teclado
     jornada.ci.setText("4501002")
     qtbot.mouseClick(boton(jornada, "Buscar"), Qt.MouseButton.LeftButton)
+    foto_de_hoy(qtbot, jornada)
     jornada.simular_falla.setChecked(True)
     qtbot.mouseClick(jornada.boton_huella, Qt.MouseButton.LeftButton)
     assert not jornada.boton_cabina.isEnabled() and "no coincide" in jornada.datos_votante.text()
@@ -390,6 +419,7 @@ def test_comprobante_con_cuenta_regresiva_y_finalizar(qtbot, sesion):
     eid = configuracion.crear_eleccion(ctx, "Prueba de comprobante", [Candidatura("A", "Ana")], bits=2048).eleccion_id
     empadronamiento.iniciar(ctx, eid)
     app.preparar_simulacion("4501001")
+    app.lector.abrir()
     empadronamiento.registrar_votante(ctx, eid, "4501001", "Rosa", "Mamani")
     empadronamiento.cerrar_padron(ctx, eid)
     apertura.abrir(ctx, eid)
@@ -406,6 +436,65 @@ def test_comprobante_con_cuenta_regresiva_y_finalizar(qtbot, sesion):
     assert kiosco.pila.currentIndex() == 0
 
 
+def test_camara_y_lector_con_botones(qtbot, sesion, dialogos):
+    """La cámara solo se enciende a pedido y se apaga sola tras la foto o al salir de la página;
+    el lector se conecta y desconecta a mano y su estado es el mismo en todas las páginas."""
+    from votoseguro.hardware.camara import CamaraSimulada
+    from votoseguro.servicios import configuracion, empadronamiento
+    from votoseguro.servicios.configuracion import Candidatura
+    from votoseguro.ui.paginas.usuarios import PaginaUsuarios
+    from votoseguro.ui.vista_camara import SIMULADA
+
+    app = sesion()
+    ctx = app.ctx()
+    eid = configuracion.crear_eleccion(ctx, "Prueba de dispositivos", [Candidatura("A", "Ana")], bits=2048).eleccion_id
+    empadronamiento.iniciar(ctx, eid)
+    app.eleccion_id = eid
+    kiosco = VentanaKiosco(app)
+    ventana = VentanaPrincipal(app, kiosco)
+    qtbot.addWidget(ventana)
+    qtbot.addWidget(kiosco)
+    ventana.show()
+    ventana.ir_a(PaginaEmpadronamiento)
+    padron = ventana.pagina_actual()
+    camara, lector = padron.camara, padron.lector
+
+    # Cámara: apagada al entrar; se enciende a pedido y se apaga sola al tomar la foto.
+    assert not camara.encendida() and not camara.boton_foto.isEnabled()
+    assert camara.selector.itemText(camara.selector.count() - 1) == SIMULADA
+    qtbot.keyClicks(padron.ci, "4501009")
+    clic(qtbot, camara.boton_encender)
+    assert camara.encendida() and camara.boton_apagar.isEnabled()
+    clic(qtbot, camara.boton_foto)
+    assert camara.foto is not None and not camara.encendida()
+    assert "✔ foto" in padron.pasos.text() and not padron.boton_registrar.isEnabled()
+
+    # Lector: desconectado al inicio; «Capturar» solo con el lector conectado.
+    assert not lector.conectado() and not lector.boton_accion.isEnabled()
+    clic(qtbot, lector.boton_conectar)
+    assert lector.boton_accion.isEnabled() and "Conectado" in lector.estado.text()
+    clic(qtbot, lector.boton_accion)
+    assert lector.plantilla is not None and "Huella capturada" in lector.estado.text()
+
+    # Si cambia el CI, la foto y la huella eran de otra persona: se descartan.
+    qtbot.keyClicks(padron.ci, "0")
+    assert camara.foto is None and lector.plantilla is None
+
+    # Al salir de la página con la cámara encendida, se apaga.
+    clic(qtbot, camara.boton_encender)
+    ventana.ir_a(PaginaUsuarios)
+    assert not camara.encendida()
+
+    # Desconectar el lector: deja de capturar en todas las páginas.
+    ventana.ir_a(PaginaEmpadronamiento)
+    clic(qtbot, lector.boton_desconectar)
+    assert not app.lector.abierto and not lector.boton_accion.isEnabled()
+
+    # Elegir otra cámara reemplaza la del sistema (la de los servicios también).
+    camara._elegir(camara.selector.count() - 1)
+    assert isinstance(app.camara, CamaraSimulada) and app.ctx().camara is app.camara
+
+
 def test_liberar_cabina_cuando_el_votante_se_va_sin_votar(qtbot, sesion, dialogos):
     from votoseguro.servicios import configuracion, empadronamiento, apertura
     from votoseguro.servicios.configuracion import Candidatura
@@ -415,6 +504,7 @@ def test_liberar_cabina_cuando_el_votante_se_va_sin_votar(qtbot, sesion, dialogo
     eid = configuracion.crear_eleccion(ctx, "Prueba de abandono", [Candidatura("A", "Ana")], bits=2048).eleccion_id
     empadronamiento.iniciar(ctx, eid)
     app.preparar_simulacion("4501001")
+    app.lector.abrir()
     empadronamiento.registrar_votante(ctx, eid, "4501001", "Rosa", "Mamani")
     empadronamiento.cerrar_padron(ctx, eid)
     apertura.abrir(ctx, eid)
@@ -427,6 +517,7 @@ def test_liberar_cabina_cuando_el_votante_se_va_sin_votar(qtbot, sesion, dialogo
     jornada = ventana.pagina_actual()
     jornada.ci.setText("4501001")
     qtbot.mouseClick(boton(jornada, "Buscar"), Qt.MouseButton.LeftButton)
+    foto_de_hoy(qtbot, jornada)
     qtbot.mouseClick(jornada.boton_huella, Qt.MouseButton.LeftButton)
     qtbot.mouseClick(jornada.boton_cabina, Qt.MouseButton.LeftButton)
     assert kiosco.ocupada and not jornada.boton_liberar.isHidden()

@@ -12,8 +12,8 @@ from votoseguro.datos import repositorio as repo
 from votoseguro.dominio.modelos import Estado, Rol
 from votoseguro.servicios import empadronamiento, votacion
 from votoseguro.ui.comun import confirmar, ejecutar, etiqueta, imagen, mensaje
-from votoseguro.ui.dialogo_huella import leer_huella
-from votoseguro.ui.vista_camara import VistaCamara
+from votoseguro.ui.panel_lector import PanelLector
+from votoseguro.ui.vista_camara import PanelCamara
 from votoseguro.ui.paginas.base import Pagina, elegir_archivos, elegir_carpeta, pedir_frase, pedir_texto
 
 
@@ -30,32 +30,43 @@ class PaginaEmpadronamiento(Pagina):
         self.capa.addWidget(self.boton_iniciar)
 
         fila = QHBoxLayout()
-        self.caja_registro = QGroupBox("Registrar votante")
+        izquierda = QVBoxLayout()
+        self.caja_registro = QGroupBox("1. Datos del votante")
         f = QFormLayout(self.caja_registro)
         self.ci, self.nombres, self.apellidos = QLineEdit(), QLineEdit(), QLineEdit()
-        self.ci.textEdited.connect(lambda _t: self.vista.activar())   # nueva persona: cámara en vivo
-        self.ci.setPlaceholderText("Número de CI (con complemento si tiene, p. ej. 4567890-1A)")
+        self.ci.textEdited.connect(self._nueva_persona)
+        self.ci.setPlaceholderText("CI (con complemento si tiene, p. ej. 4567890-1A)")
         f.addRow("CI", self.ci)
         f.addRow("Nombres", self.nombres)
         f.addRow("Apellidos", self.apellidos)
-        f.addRow(etiqueta("La persona debe estar frente a la cámara y apoyar el dedo índice en el lector.", "ayuda"))
-        self.boton_registrar = QPushButton("Tomar foto, capturar huella y registrar")
+        for campo in (self.nombres, self.apellidos):
+            campo.textEdited.connect(lambda _t: self._actualizar_pasos())
+        izquierda.addWidget(self.caja_registro)
+        self.lector = PanelLector(self.app, "3. Huella", "Capturar huella")
+        self.lector.boton_accion.clicked.connect(self._capturar_huella)
+        self.lector.huella_capturada.connect(self._actualizar_pasos)
+        izquierda.addWidget(self.lector)
+        self.pasos = etiqueta("", "ayuda")
+        izquierda.addWidget(self.pasos)
+        self.boton_registrar = QPushButton("4. Registrar votante e imprimir constancia")
         self.boton_registrar.clicked.connect(self.registrar)
-        f.addRow(self.boton_registrar)
-        fila.addWidget(self.caja_registro, 3)
-        foto = QVBoxLayout()
-        self.vista = VistaCamara(self.app.camara, 240)      # cámara en vivo (o simulada)
-        foto.addWidget(self.vista, alignment=Qt.AlignmentFlag.AlignCenter)
+        izquierda.addWidget(self.boton_registrar)
+        izquierda.addStretch()
+        fila.addLayout(izquierda, 3)
+
+        derecha = QVBoxLayout()
+        self.camara = PanelCamara(self.app, "2. Foto de registro", 240, self._preparar_simulacion)
+        self.camara.foto_tomada.connect(self._actualizar_pasos)
+        derecha.addWidget(self.camara)
+        ultimo = QHBoxLayout()
         self.foto = QLabel()
-        self.foto.setPixmap(imagen(None, 120))
-        self.foto.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.pie_foto = etiqueta("Última foto registrada", "ayuda")
-        self.pie_foto.setFixedWidth(190)
-        self.pie_foto.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        foto.addWidget(self.foto)
-        foto.addWidget(self.pie_foto)
-        foto.addStretch()
-        fila.addLayout(foto, 1)
+        self.foto.setPixmap(imagen(None, 80))
+        self.pie_foto = etiqueta("Último registrado: —", "ayuda")
+        ultimo.addWidget(self.foto)
+        ultimo.addWidget(self.pie_foto, 1)
+        derecha.addLayout(ultimo)
+        derecha.addStretch()
+        fila.addLayout(derecha, 2)
         self.capa.addLayout(fila)
 
         self.resumen = etiqueta("", "subtitulo")
@@ -88,11 +99,11 @@ class PaginaEmpadronamiento(Pagina):
         if e is None:
             return
         en_registro = e.estado == Estado.EMPADRONAMIENTO
-        if en_registro:
-            self.vista.activar()
         self.boton_iniciar.setVisible(e.estado == Estado.CONFIGURACION)
-        for w in (self.caja_registro, self.boton_inhabilitar, self.boton_cerrar):
+        for w in (self.caja_registro, self.lector, self.boton_inhabilitar, self.boton_cerrar):
             w.setEnabled(en_registro)
+        self.camara.permitir(en_registro)
+        self._actualizar_pasos()
         self.boton_resumen.setEnabled(e.estado in (Estado.EMPADRONAMIENTO, Estado.LISTA))
         padron = repo.padron_completo(self.app.conn, e.id)
         habilitados = sum(v["habilitado"] for v in padron)
@@ -111,26 +122,50 @@ class PaginaEmpadronamiento(Pagina):
         if ejecutar(self, lambda: empadronamiento.iniciar(self.app.ctx(), self.app.eleccion_id)):
             self.avisar_cambio()
 
-    def registrar(self) -> None:
-        ci = self.ci.text().strip().upper()
-        nombres, apellidos = self.nombres.text().strip(), self.apellidos.text().strip()
-        if not (ci and nombres and apellidos):
-            mensaje(self, "Datos incompletos", "Complete CI, nombres y apellidos.", error=True)
+    def _ci(self) -> str:
+        return self.ci.text().strip().upper()
+
+    def _nueva_persona(self, _texto: str) -> None:
+        """Cambió el CI: la foto y la huella tomadas eran de otra persona."""
+        if self.camara.foto is not None or self.lector.plantilla is not None:
+            self.camara.limpiar()
+            self.lector.limpiar()
+        self._actualizar_pasos()
+
+    def _preparar_simulacion(self) -> None:
+        self.app.preparar_simulacion(self._ci() or "sin-ci")
+
+    def _actualizar_pasos(self) -> None:
+        """Lista de lo que falta y habilita «Registrar» cuando está todo."""
+        hay_datos = bool(self._ci() and self.nombres.text().strip() and self.apellidos.text().strip())
+        marcas = [("datos", hay_datos), ("foto", self.camara.foto is not None),
+                  ("huella", self.lector.plantilla is not None)]
+        self.pasos.setText(" · ".join(f"{'✔' if ok else '○'} {n}" for n, ok in marcas))
+        self.boton_registrar.setEnabled(all(ok for _n, ok in marcas))
+        self.lector.permitir_accion(bool(self._ci()))
+
+    def _capturar_huella(self) -> None:
+        if not self._ci():
+            mensaje(self, "Falta el CI", "Escriba primero el CI de la persona.", error=True)
             return
-        self.app.preparar_simulacion(ci)
+        self._preparar_simulacion()
+        self.lector.capturar()
 
-        def registrar():
-            empadronamiento.registrar_votante(self.app.ctx(), self.app.eleccion_id, ci, nombres, apellidos)
-
-        if ejecutar(self, lambda: leer_huella(self, "Mire a la cámara y apoye el dedo índice en el lector…",
-                                              registrar, "Foto y huella registradas", "No se pudo registrar")):
-            foto = votacion.foto_registro(self.app.ctx(), self.app.eleccion_id, ci)
-            self.vista.congelar(foto)
-            self.foto.setPixmap(imagen(foto, 120))
-            self.pie_foto.setText(f"{apellidos}, {nombres} — CI {ci}")
+    def registrar(self) -> None:
+        ci, nombres, apellidos = self._ci(), self.nombres.text().strip(), self.apellidos.text().strip()
+        foto, plantilla = self.camara.foto, self.lector.plantilla
+        if not (ci and nombres and apellidos and foto and plantilla):
+            mensaje(self, "Faltan datos", "Complete los datos, tome la foto y capture la huella.", error=True)
+            return
+        if ejecutar(self, lambda: empadronamiento.registrar_votante(
+                self.app.ctx(), self.app.eleccion_id, ci, nombres, apellidos, foto=foto, plantilla=plantilla)):
+            self.foto.setPixmap(imagen(foto, 80))
+            self.pie_foto.setText(f"Último registrado:<br><b>{apellidos}, {nombres}</b><br>CI {ci}")
             self.ventana.barra(f"Votante {ci} registrado · se imprimió su constancia de empadronamiento")
             for campo in (self.ci, self.nombres, self.apellidos):
                 campo.clear()
+            self.camara.limpiar()
+            self.lector.limpiar()
             self.ci.setFocus()
             self.refrescar()
 
@@ -141,8 +176,8 @@ class PaginaEmpadronamiento(Pagina):
     def mostrar_foto_seleccionada(self) -> None:
         ci = self._ci_seleccionado()
         if ci:
-            self.foto.setPixmap(imagen(votacion.foto_registro(self.app.ctx(), self.app.eleccion_id, ci), 120))
-            self.pie_foto.setText(f"CI {ci}")
+            self.foto.setPixmap(imagen(votacion.foto_registro(self.app.ctx(), self.app.eleccion_id, ci), 80))
+            self.pie_foto.setText(f"Seleccionado:<br>CI {ci}")
 
     def inhabilitar(self) -> None:
         ci = self._ci_seleccionado()

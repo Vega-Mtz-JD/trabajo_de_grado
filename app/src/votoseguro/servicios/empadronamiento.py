@@ -33,16 +33,17 @@ def iniciar(ctx: Contexto, eleccion_id: str) -> None:
         bitacora.registrar(ctx.conn, ctx.actor, "EMPADRONAMIENTO_INICIADO", {"eleccion": eleccion_id})
 
 
-def registrar_votante(ctx: Contexto, eleccion_id: str, ci: str, nombres: str, apellidos: str) -> None:
-    """Toma la foto de registro y la huella (la persona debe estar frente a la cámara y con el
-    dedo sobre el lector) y agrega al votante al padrón. Foto y plantilla se guardan cifradas.
+def registrar_votante(ctx: Contexto, eleccion_id: str, ci: str, nombres: str, apellidos: str, *,
+                      foto: bytes | None = None, plantilla: bytes | None = None) -> None:
+    """Agrega al votante al padrón con su foto de registro y su huella. Foto y plantilla se
+    guardan cifradas. Si no se entregan ya tomadas (la interfaz las toma paso a paso), se
+    capturan ahora: la persona debe estar frente a la cámara y con el dedo sobre el lector.
     Imprime la constancia de empadronamiento para el votante."""
     eleccion = exigir_estado(ctx, eleccion_id, Estado.EMPADRONAMIENTO)
-    foto = ctx.tomar_foto()
-    try:
-        plantilla = ctx.lector.capturar()
-    except LectorNoDisponible as e:
-        raise HardwareNoDisponible(str(e)) from e
+    if foto is None:
+        foto = ctx.tomar_foto()
+    if plantilla is None:
+        plantilla = capturar_huella(ctx)
     with ctx.conn.transaction():
         repo.insertar_votante(
             ctx.conn, eleccion_id, ci, nombres.strip(), apellidos.strip(),
@@ -59,6 +60,14 @@ def registrar_votante(ctx: Contexto, eleccion_id: str, ci: str, nombres: str, ap
          f"El día de la votación preséntese en la mesa {eleccion.mesa} con su cédula de identidad.",
          "", "Firma del operador: ______________________"],
         None, f"constancia_{ci}", foto))
+
+
+def capturar_huella(ctx: Contexto) -> bytes:
+    """Plantilla de la huella apoyada en el lector."""
+    try:
+        return ctx.lector.capturar()
+    except LectorNoDisponible as e:
+        raise HardwareNoDisponible(str(e)) from e
 
 
 def inhabilitar_votante(ctx: Contexto, eleccion_id: str, ci: str, motivo: str) -> None:

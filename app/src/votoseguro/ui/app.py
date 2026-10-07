@@ -110,7 +110,7 @@ def iniciar(argv: list[str] | None = None):
         except PuenteNoDisponible as e:
             QMessageBox.warning(None, "Hyperledger Fabric", f"{e}\nLos anclajes quedarán en cola.")
 
-    sesion = SesionApp(conn, llavero, LectorSimulado(), elegir_camara(args.camara),
+    sesion = SesionApp(conn, llavero, LectorSimulado(abierto=False), elegir_camara(args.camara),
                        ImpresoraPDF(args.salida / "impresiones"), args.salida, puente, simulado=True,
                        usuario=login.usuario, rol=login.rol)
     kiosco = VentanaKiosco(sesion, pantalla_completa=args.kiosco)

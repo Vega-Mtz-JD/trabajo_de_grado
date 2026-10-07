@@ -40,6 +40,8 @@ QPushButton:hover {{ background: #1d4ed8; }}
 QPushButton:disabled {{ background: #e5e7eb; color: #9ca3af; }}
 QPushButton#secundario {{ background: {SUPERFICIE}; color: {TEXTO}; border: 1px solid {BORDE_FUERTE}; }}
 QPushButton#secundario:hover {{ background: {FONDO}; border-color: {SECUNDARIO}; }}
+QPushButton#secundario:disabled, QPushButton#peligro:disabled {{ background: {FONDO}; color: #b6bcc6;
+              border: 1px dashed {BORDE}; }}
 QPushButton#peligro {{ background: {SUPERFICIE}; color: {ROJO}; border: 1px solid {ROJO}; }}
 QPushButton#peligro:hover {{ background: #fdecea; }}
 QPushButton#salir {{ background: transparent; color: {SECUNDARIO}; border: 1px solid {BORDE_FUERTE};

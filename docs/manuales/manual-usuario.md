@@ -81,11 +81,16 @@ Marque cada punto antes de empezar:
 Se hace **días antes** de la votación, en el mismo equipo.
 
 1. Menú **Empadronamiento** → botón **Iniciar el empadronamiento** (solo la primera vez).
-2. Escriba el **CI** (con complemento si tiene), los **nombres** y los **apellidos**.
-3. A la derecha se ve la **cámara en vivo**. Pida a la persona que **mire a la cámara** y **apoye el dedo índice** en el lector.
-4. Presione **Tomar foto, capturar huella y registrar**. Aparece la ventana del **lector de huella** («Mire a la cámara y apoye el dedo…» → «✔ Foto y huella registradas»). La foto queda en pantalla y la persona se agrega a la lista.
-5. Se imprime la **constancia de empadronamiento** (con la foto y los datos), que se entrega a la persona.
-6. Repita con cada persona.
+2. Al empezar la jornada, en el recuadro **3. Huella** presione **Conectar** (el lector queda conectado hasta que presione **Desconectar**). Si tiene una **cámara USB externa**, conéctela y elíjala en la lista del recuadro **2. Foto de registro** (botón **↻** para volver a buscar).
+
+Con cada persona, siga los pasos numerados de la pantalla. Abajo se ve qué falta: «○ datos · ○ foto · ○ huella».
+
+1. **Datos:** escriba el **CI** (con complemento si tiene), los **nombres** y los **apellidos**.
+2. **Foto:** presione **Encender**, pida a la persona que **mire a la cámara** y presione **Tomar foto**. La cámara **se apaga sola** después de la foto (si no le gusta, presione **Encender** y tómela otra vez).
+3. **Huella:** pida que **apoye el dedo índice** en el lector y presione **Capturar huella**. Aparece la ventana del lector («✔ Huella capturada»).
+4. **Registrar:** cuando las tres marcas están en ✔, presione **Registrar votante e imprimir constancia**. La persona se agrega a la lista y se imprime su **constancia de empadronamiento** (con la foto y los datos), que se le entrega.
+
+> Si cambia el CI después de tomar la foto o la huella, el sistema las descarta: eran de otra persona.
 
 ![Empadronamiento](../adjuntos/ui/02_empadronamiento.png)
 
@@ -98,7 +103,7 @@ Se hace **días antes** de la votación, en el mismo equipo.
 ### 5.2. Abrir la mesa (el día de la votación)
 
 1. Menú **Jornada de votación**.
-2. Revise la lista de equipos: **lector de huella**, **cámara** e **impresora** deben tener un ✔ verde.
+2. Revise la lista de equipos: **lector de huella**, **cámara** e **impresora** deben tener un ✔ verde. En la mesa de identificación, presione **Conectar** en el recuadro **Huella**.
 3. Presione **Abrir la mesa e imprimir la zerésima**. Se imprime la **zerésima**.
 4. Los **delegados leen** la zerésima (votos en cero), **firman** y anotan el código de la «HUELLA DEL DISPOSITIVO».
 
@@ -111,8 +116,8 @@ Esta es la tarea que más repetirá durante el día. Practíquela en la capacita
 > ### La rutina de la mesa
 > 1. **Pida el carnet** y escriba el **CI**. Presione **Buscar**.
 > 2. **Mire la foto de registro** y compárela con la persona que tiene enfrente.
-> 3. Pida que **mire a la cámara** y **apoye el dedo**, y presione **Verificar huella**. Aparece la ventana del lector.
-> 4. Si la huella coincide: «✔ Huella verificada · foto de hoy tomada». La **foto de hoy** queda junto a la de registro y aparece «✔ Identificado».
+> 3. **Foto de hoy:** presione **Encender**, pida que mire a la cámara y presione **Tomar foto** (la cámara se apaga sola).
+> 4. Pida que **apoye el dedo** y presione **Verificar huella**. Aparece la ventana del lector. Si coincide: «✔ Huella verificada» y «✔ Identificado».
 > 5. Presione **Habilitar la cabina**. La cabina se activa para esa persona.
 > 6. Indique a la persona que **pase a la cabina**. Cuando termine, usted atiende a la siguiente.
 >

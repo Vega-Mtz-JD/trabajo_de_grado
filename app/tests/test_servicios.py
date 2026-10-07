@@ -12,7 +12,7 @@ from votoseguro.datos import repositorio as repo
 from votoseguro.datos.conexion import VotanteNoHabilitado
 from votoseguro.dominio.modelos import Estado, Rol
 from votoseguro.hardware.camara import CamaraSimulada
-from votoseguro.hardware.huella import LectorSimulado
+from votoseguro.hardware.huella import LectorNoDisponible, LectorSimulado
 from votoseguro.hardware.impresora import ImpresoraMemoria
 from votoseguro.servicios import (
     apertura, cierre, configuracion, demo, empadronamiento, escrutinio, exportacion, usuarios,
@@ -159,6 +159,42 @@ def test_apertura_exige_hardware(ctx):
     ctx.lector.conectado = False
     with pytest.raises(HardwareNoDisponible, match="lector"):
         apertura.abrir(ctx, creada.eleccion_id)
+
+
+def test_foto_y_huella_tomadas_antes_por_la_interfaz(ctx):
+    """La interfaz toma la foto y la huella paso a paso y las entrega al registrar y al identificar:
+    el servicio no vuelve a usar la cámara ni el lector para eso."""
+    creada = configuracion.crear_eleccion(ctx, "Paso a paso", [Candidatura("A", "Ana")], bits=2048)
+    eid = creada.eleccion_id
+    empadronamiento.iniciar(ctx, eid)
+    ctx.lector.colocar_dedo("7001001")
+    plantilla = empadronamiento.capturar_huella(ctx)
+    ctx.camara.conectada = False                         # la cámara ya no se usa al registrar
+    empadronamiento.registrar_votante(ctx, eid, "7001001", "Rosa", "Mamani", foto=b"foto-registro",
+                                      plantilla=plantilla)
+    assert votacion.foto_registro(ctx, eid, "7001001") == b"foto-registro"
+    empadronamiento.cerrar_padron(ctx, eid)
+    ctx.camara.conectada = True
+    apertura.abrir(ctx, eid)
+    ctx.camara.conectada = False
+    sesion = votacion.autenticar_huella(ctx, eid, "7001001", foto=b"foto-de-hoy")
+    assert sesion.metodo == "HUELLA"
+    cifrada = ctx.conn.execute("SELECT foto_cifrada FROM padron.presencia WHERE eleccion_id = %s",
+                               (eid,)).fetchone()[0]
+    assert ctx.llavero.descifrar_personal("foto_presencia", eid, "7001001", bytes(cifrada)) == b"foto-de-hoy"
+
+
+def test_lector_cerrado_no_captura(ctx):
+    lector = LectorSimulado(abierto=False)
+    lector.colocar_dedo("7002")
+    with pytest.raises(LectorNoDisponible, match="Conectar"):
+        lector.capturar()
+    lector.abrir()
+    assert lector.capturar().startswith(b"SIM1")
+    lector.cerrar()
+    lector.conectado = False
+    with pytest.raises(LectorNoDisponible, match="USB"):
+        lector.abrir()
 
 
 def test_fases_fuera_de_orden(ctx):

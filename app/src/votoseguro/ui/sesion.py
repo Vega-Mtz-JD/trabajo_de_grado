@@ -37,6 +37,17 @@ class SesionApp:
                                       self.camara, self.puente)
         return self._contexto
 
+    def cambiar_camara(self, camara: Camara) -> None:
+        """El operador eligió otra cámara (p. ej. una externa USB)."""
+        self.camara = camara
+        if self._contexto is not None:
+            self._contexto.camara = camara
+
+    def cambiar_lector(self, lector: LectorHuella) -> None:
+        self.lector = lector
+        if self._contexto is not None:
+            self._contexto.lector = lector
+
     def eleccion(self) -> Eleccion | None:
         return repo.obtener_eleccion(self.conn, self.eleccion_id) if self.eleccion_id else None
 

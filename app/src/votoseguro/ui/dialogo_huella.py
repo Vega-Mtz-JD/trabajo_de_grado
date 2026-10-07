@@ -13,21 +13,23 @@ from votoseguro.ui.estilo import ACENTO, ROJO, VERDE
 DURACION_MS = 1200   # duración de la lectura simulada (las pruebas la reducen)
 
 
-class _Huella(QWidget):
+class Huella(QWidget):
     """Dibujo simple de una huella dactilar (arcos concéntricos)."""
 
-    def __init__(self):
+    def __init__(self, ancho: int = 96, alto: int = 120):
         super().__init__()
-        self.setFixedSize(96, 120)
+        self.setFixedSize(ancho, alto)
         self.color = QColor(ACENTO)
 
     def paintEvent(self, _evento):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
-        p.setPen(QPen(self.color, 3, Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
+        ancho, alto = self.width(), self.height()
+        paso = ancho / 16
+        p.setPen(QPen(self.color, max(1.5, ancho / 32), Qt.PenStyle.SolidLine, Qt.PenCapStyle.RoundCap))
         for i in range(7):
-            m = 6 + i * 6
-            p.drawArc(QRectF(m, m, 96 - 2 * m, 120 - 2 * m), 290 * 16, 320 * 16)   # abertura abajo
+            m = paso + i * paso
+            p.drawArc(QRectF(m, m, ancho - 2 * m, alto - 2 * m), 290 * 16, 320 * 16)   # abertura abajo
 
 
 class DialogoHuella(QDialog):
@@ -35,9 +37,12 @@ class DialogoHuella(QDialog):
         super().__init__(parent)
         self.setWindowTitle("Lector de huella")
         self.setModal(True)
+        # Sin botón de cerrar: la lectura termina sola (evita acciones a medias o ventanas repetidas).
+        self.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.CustomizeWindowHint | Qt.WindowType.WindowTitleHint)
+        self.terminado = False
         self.setMinimumWidth(360)
         capa = QVBoxLayout(self)
-        self.dibujo = _Huella()
+        self.dibujo = Huella()
         capa.addWidget(self.dibujo, alignment=Qt.AlignmentFlag.AlignCenter)
         self.texto = QLabel(mensaje)
         self.texto.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -48,7 +53,12 @@ class DialogoHuella(QDialog):
         self.barra.setTextVisible(False)
         capa.addWidget(self.barra)
 
+    def reject(self) -> None:          # Esc no interrumpe una lectura en curso
+        if self.terminado:
+            super().reject()
+
     def resultado(self, ok: bool, texto: str) -> None:
+        self.terminado = True
         self.barra.setRange(0, 1)
         self.barra.setValue(1)
         self.dibujo.color = QColor(VERDE if ok else ROJO)
@@ -73,8 +83,12 @@ def leer_huella(padre, mensaje: str, accion, texto_ok: str, texto_error: str):
             estado["error"] = e
             dialogo.resultado(False, texto_error)
 
-    QTimer.singleShot(DURACION_MS, ejecutar)
+    reloj = QTimer(dialogo)              # pertenece a la ventana: no puede dispararse después
+    reloj.setSingleShot(True)
+    reloj.timeout.connect(ejecutar)
+    reloj.start(DURACION_MS)
     dialogo.exec()
+    dialogo.deleteLater()
     if "error" in estado:
         raise estado["error"]
     return estado.get("valor")

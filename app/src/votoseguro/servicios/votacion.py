@@ -58,8 +58,9 @@ def identificar(ctx: Contexto, eleccion_id: str, ci: str) -> dict:
     return {"nombres": votante["nombres"], "apellidos": votante["apellidos"]}
 
 
-def autenticar_huella(ctx: Contexto, eleccion_id: str, ci: str) -> SesionVoto:
-    """Compara 1:1 la huella viva con la registrada. Hasta ``MAX_INTENTOS`` capturas."""
+def autenticar_huella(ctx: Contexto, eleccion_id: str, ci: str, *, foto: bytes | None = None) -> SesionVoto:
+    """Compara 1:1 la huella viva con la registrada. Hasta ``MAX_INTENTOS`` capturas.
+    ``foto`` es la foto de hoy ya tomada en la mesa (si falta, se toma al autenticar)."""
     identificar(ctx, eleccion_id, ci)
     votante = repo.obtener_votante(ctx.conn, eleccion_id, ci)
     registrada = ctx.llavero.descifrar_personal("plantilla", eleccion_id, ci, bytes(votante["plantilla_cifrada"]))
@@ -71,14 +72,15 @@ def autenticar_huella(ctx: Contexto, eleccion_id: str, ci: str) -> SesionVoto:
         if ctx.lector.coincide(registrada, viva):
             bitacora.registrar(ctx.conn, ctx.actor, "VOTANTE_AUTENTICADO",
                                {"eleccion": eleccion_id, "ci": ci, "metodo": "HUELLA", "intento": intento})
-            _registrar_presencia(ctx, eleccion_id, ci, "HUELLA")
+            _registrar_presencia(ctx, eleccion_id, ci, "HUELLA", foto)
             return SesionVoto(eleccion_id, ci, "HUELLA")
         bitacora.registrar(ctx.conn, ctx.actor, "AUTENTICACION_FALLIDA",
                            {"eleccion": eleccion_id, "ci": ci, "intento": intento})
     raise AutenticacionFallida(f"la huella no coincide tras {MAX_INTENTOS} intentos")
 
 
-def autorizar_excepcion(ctx: Contexto, eleccion_id: str, ci: str, motivo: str) -> SesionVoto:
+def autorizar_excepcion(ctx: Contexto, eleccion_id: str, ci: str, motivo: str, *,
+                        foto: bytes | None = None) -> SesionVoto:
     """Habilita a un votante con huella ilegible tras verificar su CI en persona.
 
     Queda registrado quién autorizó y por qué, y se cuenta en el acta de cierre.
@@ -88,7 +90,7 @@ def autorizar_excepcion(ctx: Contexto, eleccion_id: str, ci: str, motivo: str) -
     identificar(ctx, eleccion_id, ci)
     bitacora.registrar(ctx.conn, ctx.actor, "EXCEPCION_MANUAL",
                        {"eleccion": eleccion_id, "ci": ci, "motivo": motivo.strip()})
-    _registrar_presencia(ctx, eleccion_id, ci, "EXCEPCION")
+    _registrar_presencia(ctx, eleccion_id, ci, "EXCEPCION", foto)
     return SesionVoto(eleccion_id, ci, "EXCEPCION")
 
 
@@ -100,10 +102,11 @@ def foto_registro(ctx: Contexto, eleccion_id: str, ci: str) -> bytes | None:
     return ctx.llavero.descifrar_personal("foto_registro", eleccion_id, ci, bytes(votante["foto_cifrada"]))
 
 
-def _registrar_presencia(ctx: Contexto, eleccion_id: str, ci: str, metodo: str) -> None:
+def _registrar_presencia(ctx: Contexto, eleccion_id: str, ci: str, metodo: str, foto: bytes | None) -> None:
     """Foto de presencia en la mesa de identificación (ADR-009). Se guarda la primera
     identificación del día; si el votante vuelve a identificarse, se conserva la primera."""
-    foto = ctx.tomar_foto()
+    if foto is None:
+        foto = ctx.tomar_foto()
     cifrada = ctx.llavero.cifrar_personal("foto_presencia", eleccion_id, ci, foto)
     with ctx.conn.transaction():
         if repo.registrar_presencia(ctx.conn, eleccion_id, ci, metodo, cifrada):
