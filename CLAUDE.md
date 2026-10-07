@@ -26,6 +26,7 @@ pytest --cov=votoseguro --cov-report=term-missing     # cobertura
 VOTOSEGURO_DSN='dbname=votoseguro' votoseguro demo    # elección simulada completa (BD de desarrollo)
 votoseguro verificar <paquete.vsx> --frase ...        # auditoría triple de un paquete USB
 docs/exportar/exportar_word.sh [perfil]               # informe → docs/salida/*.docx
+docs/diagramas/generar.sh [fig_1_]                   # figuras del informe → docs/adjuntos/diagramas/
 blockchain/network/up.sh && blockchain/bridge/iniciar.sh   # Fabric + puente (luego: demo --fabric)
 pytest -m fabric                                      # integración con Fabric real
 votoseguro-ui [--fabric] [--camara auto|web|simulada]  # interfaz gráfica (panel de mesa + kiosco)

@@ -12,12 +12,12 @@ documento: "[[bitacora/perfil-v1|Perfil v1]] — Cap. I y II"
 ## Críticas (riesgo de devolución)
 
 - [ ] **C1** 🟦 Falta el **cronograma de actividades** (Art. 29.a). Agregarlo (tabla o Gantt) en 1.6 y explicar la duración del ciclo de vida.
-- [ ] **C2** 🟨 Falta el **DFD** de la situación actual (nivel 0 y 1). Quitar la nota visible «debe validarse con la institución» (01:60). Alinear los procesos de 1.3.1 con los 5 problemas: el problema 5 (trazabilidad) no tiene proceso.
+- [ ] **C2** 🟨 *(Parcial 07/10: E-P-S y DFD nivel 0 y 1 hechos — Figuras 1.1 a 1.3; nota visible quitada; P5 marcado como transversal. Falta validarlos con [EMPRESA].)* Falta el **DFD** de la situación actual (nivel 0 y 1). Quitar la nota visible «debe validarse con la institución» (01:60). Alinear los procesos de 1.3.1 con los 5 problemas: el problema 5 (trazabilidad) no tiene proceso.
 - [ ] **C3** 🟨 El problema se afirma **sin datos**: votantes, duración del conteo, incidentes e impugnaciones de [EMPRESA]. Quitar «por lo general» (02:124) o citarlo.
 - [ ] **C4** 🟦 **"Registro distribuido"** con un solo nodo es inexacto. Decir «red permisionada Hyperledger Fabric (configuración mononodo)» y precisar en los límites que no garantiza inmutabilidad frente a quien controla el equipo (se apoya en el anclaje en papel).
 - [ ] **C5** 🟦 **Afirmaciones absolutas**: «nadie puede conocerlos», «impedir», «sin errores», «elimina la superficie de ataque», «se garantiza». Reformular con matices: ningún custodio individual, reducir o detectar, se busca preservar.
 - [ ] **C6** 🟦/🟨 **Shamir con una sola fuente**: agregar una segunda, verificada (p. ej. Menezes et al., *Handbook of Applied Cryptography*, cap. 12). Fortalecer «operación sin conexión» y «escrutinio» con fuentes conceptuales.
-- [ ] **C7** 🟦/🟨 **Extensión**: 37 páginas exportadas, el mínimo es 40. Se completa con DFD, árboles de problemas y objetivos, cronograma, presupuesto, antecedentes más detallados, marco contextual más amplio y conceptos faltantes.
+- [ ] **C7** 🟦/🟨 *(Parcial 07/10: 44 páginas con las Figuras 1.1–1.5 y los Anexos A y B — árboles de problemas y objetivos. Falta cronograma y presupuesto.)* **Extensión**: 37 páginas exportadas, el mínimo es 40. Se completa con DFD, árboles de problemas y objetivos, cronograma, presupuesto, antecedentes más detallados, marco contextual más amplio y conceptos faltantes.
 
 **Datos de [EMPRESA] que bloquean requisitos:** nombre, misión, visión y organigrama; carta de aceptación (Arts. 46–47); qué se vota, frecuencia y número de votantes; flujo real de la jornada; duración del conteo e incidentes; reglamento electoral interno (¿interviene el OEP o el SIFDE? Ley 356 si es cooperativa); equipo disponible; costo actual por proceso; cargos de los usuarios; responsable que hará de *Product Owner*.
 

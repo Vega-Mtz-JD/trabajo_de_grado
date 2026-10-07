@@ -1,4 +1,4 @@
-# Anexo B. Manual técnico {.unnumbered}
+# Anexo D. Manual técnico {.unnumbered}
 
 ## 0. Alcance de este manual
 

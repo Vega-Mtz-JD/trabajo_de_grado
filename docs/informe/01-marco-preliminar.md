@@ -54,18 +54,59 @@ El sistema se desarrolló con la metodología ágil SCRUM y modelado UML, emplea
 
 ### 1.3.1. Descripción del problema
 
-<!-- GUÍA: imprescindible el Esquema Entrada–Proceso–Salida y el DFD de la SITUACIÓN ACTUAL (Bizagi u otra herramienta).
-     Insertar el DFD como figura una vez validado con la institución. -->
+<!-- GUÍA: imprescindible el Esquema Entrada–Proceso–Salida y el DFD de la SITUACIÓN ACTUAL.
+     Las figuras se regeneran con docs/diagramas/generar.sh. ⚠️ VERIFICAR con [EMPRESA] que el
+     flujo descrito (actores, documentos y almacenes) coincide con su proceso real. -->
 
-El proceso de votación actual de [EMPRESA] puede describirse con el siguiente esquema de entrada, proceso y salida, que debe validarse con la institución:
+El proceso de votación actual de [EMPRESA] se resume en el esquema de entrada, proceso y salida de la Figura 1.1. Las entradas son el padrón de habilitados en papel, las cédulas de identidad, las papeletas impresas, la urna y el material electoral, y el personal de la mesa; el proceso comprende la identificación del votante, la entrega de la papeleta, la emisión del voto, el conteo manual y la elaboración del acta; y las salidas son el acta de resultados, las papeletas contadas, la lista firmada de votantes y los resultados proclamados.
 
-| Entrada | Proceso | Salida |
-|---|---|---|
-| Lista de habilitados (padrón en papel), papeletas impresas, cédulas de identidad de los votantes | Identificación visual del votante con su cédula; firma en la lista; entrega de la papeleta; voto en un recinto; depósito en el ánfora; conteo manual al cierre; llenado del acta | Acta de resultados en papel, papeletas contadas, lista firmada de votantes |
+::: {custom-style="Rotulo Figura"}
+**Figura 1.1**
 
-<!-- FIGURA: DFD de la situación actual (Bizagi). -->
+*Esquema entrada–proceso–salida de la situación actual del proceso de votación*
+:::
 
-A partir de este esquema se identifican los procesos que dan origen al problema: la identificación de los votantes, que depende únicamente de la verificación visual de la cédula; el conteo, que se realiza de forma manual al cierre de la jornada; la elaboración y custodia del acta, que no cuenta con mecanismos que permitan detectar alteraciones; y la verificación posterior de los resultados, para la cual no existe una fuente de evidencia independiente del acta en papel.
+::: {custom-style="Imagen Figura"}
+![](../adjuntos/diagramas/fig_1_1_eps_situacion_actual.png){width=16cm}
+:::
+
+::: {custom-style="Nota Figura"}
+*Nota.* Elaboración propia. P1 a P5 señalan los procesos en los que se originan los problemas secundarios del apartado 1.3.3.
+:::
+
+La Figura 1.2 muestra el diagrama de flujo de datos de contexto de la situación actual: el proceso de votación intercambia información con el comité electoral, que entrega el padrón y las papeletas y recibe el acta; con el votante, que presenta su cédula y deposita la papeleta marcada; y con los delegados de los frentes, que observan el proceso, reciben una copia del acta y presentan los reclamos.
+
+::: {custom-style="Rotulo Figura"}
+**Figura 1.2**
+
+*Diagrama de flujo de datos de contexto (nivel 0) de la situación actual*
+:::
+
+::: {custom-style="Imagen Figura"}
+![](../adjuntos/diagramas/fig_1_2_dfd_contexto_situacion_actual.png){width=16cm}
+:::
+
+::: {custom-style="Nota Figura"}
+*Nota.* Elaboración propia, con la notación de Gane y Sarson.
+:::
+
+El diagrama de nivel 1 (Figura 1.3) descompone el proceso en cinco subprocesos y tres almacenes de datos en papel. En él se observa que el acta en papel (A3) es la única evidencia con la que se atienden los reclamos y que ningún subproceso deja constancia de quién intervino ni cuándo.
+
+::: {custom-style="Rotulo Figura"}
+**Figura 1.3**
+
+*Diagrama de flujo de datos de nivel 1 de la situación actual*
+:::
+
+::: {custom-style="Imagen Figura"}
+![](../adjuntos/diagramas/fig_1_3_dfd_nivel1_situacion_actual.png){width=16cm}
+:::
+
+::: {custom-style="Nota Figura"}
+*Nota.* Elaboración propia, con la notación de Gane y Sarson. A1 a A3 son almacenes de datos en papel; P1 a P5 corresponden a los problemas secundarios del apartado 1.3.3.
+:::
+
+A partir del esquema y de los diagramas de flujo de datos se identifican los procesos que dan origen al problema: la identificación de los votantes, que depende únicamente de la verificación visual de la cédula; el conteo, que se realiza de forma manual al cierre de la jornada; la elaboración y custodia del acta, que no cuenta con mecanismos que permitan detectar alteraciones; y la verificación posterior de los resultados, para la cual no existe una fuente de evidencia independiente del acta en papel.
 
 ### 1.3.2. Problema principal
 
@@ -78,6 +119,8 @@ Los procesos de votación de [EMPRESA] carecen de mecanismos que permitan verifi
 3. Las actas se elaboran y custodian en papel sin ningún mecanismo de integridad, por lo que una alteración posterior no deja rastro.
 4. No existe una fuente de evidencia independiente del acta con la cual contrastar los resultados, lo que dificulta resolver impugnaciones.
 5. No se registra de forma sistemática quién intervino en cada etapa del proceso ni cuándo, lo que impide realizar una auditoría posterior.
+
+La relación entre estas causas, el problema principal y sus efectos se representa en el árbol de problemas del Anexo A.
 
 ### 1.3.4. Formulación del problema
 
@@ -96,6 +139,8 @@ Desarrollar un sistema de votación electrónica sin conexión a red, con autent
 3. Generar actas firmadas digitalmente y ancladas en un registro distribuido Hyperledger Fabric, para que cualquier alteración posterior de los resultados sea detectable.
 4. Implementar un verificador de auditoría triple que contraste el comprobante en papel, el paquete de auditoría cifrado y el registro distribuido, para resolver impugnaciones con evidencia independiente.
 5. Registrar en una bitácora encadenada cada acción del proceso con su responsable y momento, para permitir una auditoría completa sin revelar el voto de ninguna persona.
+
+Cada objetivo específico responde a uno de los problemas secundarios; el árbol de objetivos del Anexo B muestra esta correspondencia.
 
 ## 1.5. Justificación
 
@@ -173,6 +218,22 @@ Se aplican pruebas de caja blanca, pruebas de caja negra, pruebas de estrés y p
 
 ### 1.9.2. Alcances
 
+La Figura 1.4 resume la propuesta con el mismo esquema de entrada, proceso y salida empleado para la situación actual, e indica qué objetivo específico atiende cada etapa.
+
+::: {custom-style="Rotulo Figura"}
+**Figura 1.4**
+
+*Esquema entrada–proceso–salida del sistema propuesto*
+:::
+
+::: {custom-style="Imagen Figura"}
+![](../adjuntos/diagramas/fig_1_4_eps_propuesta.png){width=16cm}
+:::
+
+::: {custom-style="Nota Figura"}
+*Nota.* Elaboración propia. O1 a O5 corresponden a los objetivos específicos del apartado 1.4.2.
+:::
+
 El sistema comprende los siguientes módulos, en el orden del proceso electoral:
 
 1. **Configuración:** definición de la elección, sus opciones (incluidos voto blanco y voto nulo) y sus mesas; generación de las claves y reparto entre custodios.
@@ -184,7 +245,21 @@ El sistema comprende los siguientes módulos, en el orden del proceso electoral:
 7. **Registro distribuido:** anclaje de los hitos en Hyperledger Fabric.
 8. **Administración:** usuarios, bitácora, migraciones y respaldos.
 
-<!-- FIGURA: Diagrama de contexto propuesto (guía de la tutora). -->
+El diagrama de contexto de la Figura 1.5 delimita el sistema propuesto: identifica las entidades externas con las que se relaciona y los flujos de datos que intercambia con cada una. Todos los intercambios son locales, en papel o mediante memoria USB, porque el sistema opera sin conexión a Internet.
+
+::: {custom-style="Rotulo Figura"}
+**Figura 1.5**
+
+*Diagrama de contexto del sistema propuesto*
+:::
+
+::: {custom-style="Imagen Figura"}
+![](../adjuntos/diagramas/fig_1_5_contexto_propuesto.png){width=16cm}
+:::
+
+::: {custom-style="Nota Figura"}
+*Nota.* Elaboración propia, con la notación de Gane y Sarson.
+:::
 
 ## 1.10. Aportes
 

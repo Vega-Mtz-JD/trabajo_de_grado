@@ -1,0 +1,795 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="282.222mm" height="176.389mm"
+ viewBox="0 0 800 500"
+ xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.2" baseProfile="tiny">
+<title>fig_1_1_eps_situacion_actual</title>
+<desc>Generated with Qt</desc>
+<defs>
+</defs>
+<g fill="none" stroke="black" stroke-width="1" fill-rule="evenodd" stroke-linecap="square" stroke-linejoin="bevel" >
+
+<g fill="#ffffff" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<rect x="0" y="0" width="800" height="500"/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M10,14 C10,11.7909 11.7909,10 14,10 L206,10 C208.209,10 210,11.7909 210,14 L210,40 C210,42.2091 208.209,44 206,44 L14,44 C11.7909,44 10,42.2091 10,40 L10,14 Z "/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,18,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,18,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="55.3438" y="13.5781" font-family="Liberation Sans" font-size="15" font-weight="700" font-style="normal" 
+ >ENTRADA</text>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,18,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#f3f4f6" fill-opacity="1" stroke="#d1d5db" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M10,58 C10,54.6863 12.6863,52 16,52 L204,52 C207.314,52 210,54.6863 210,58 L210,398 C210,401.314 207.314,404 204,404 L16,404 C12.6863,404 10,401.314 10,398 L10,58 Z "/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M255,14 C255,11.7909 256.791,10 259,10 L541,10 C543.209,10 545,11.7909 545,14 L545,40 C545,42.2091 543.209,44 541,44 L259,44 C256.791,44 255,42.2091 255,40 L255,14 Z "/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,263,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,263,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="99.5156" y="13.5781" font-family="Liberation Sans" font-size="15" font-weight="700" font-style="normal" 
+ >PROCESO</text>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,263,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#f3f4f6" fill-opacity="1" stroke="#d1d5db" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M255,58 C255,54.6863 257.686,52 261,52 L539,52 C542.314,52 545,54.6863 545,58 L545,398 C545,401.314 542.314,404 539,404 L261,404 C257.686,404 255,401.314 255,398 L255,58 Z "/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M590,14 C590,11.7909 591.791,10 594,10 L786,10 C788.209,10 790,11.7909 790,14 L790,40 C790,42.2091 788.209,44 786,44 L594,44 C591.791,44 590,42.2091 590,40 L590,14 Z "/>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,598,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,598,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="64.0938" y="13.5781" font-family="Liberation Sans" font-size="15" font-weight="700" font-style="normal" 
+ >SALIDA</text>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,598,18.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#1f2937" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#f3f4f6" fill-opacity="1" stroke="#d1d5db" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M590,58 C590,54.6863 592.686,52 596,52 L784,52 C787.314,52 790,54.6863 790,58 L790,398 C790,401.314 787.314,404 784,404 L596,404 C592.686,404 590,401.314 590,398 L590,58 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M22,70 C22,66.6863 24.6863,64 28,64 L192,64 C195.314,64 198,66.6863 198,70 L198,110 C198,113.314 195.314,116 192,116 L28,116 C24.6863,116 22,113.314 22,110 L22,70 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="17.2188" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Padrón de habilitados</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="55.0938" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >en papel</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M22,136 C22,132.686 24.6863,130 28,130 L192,130 C195.314,130 198,132.686 198,136 L198,176 C198,179.314 195.314,182 192,182 L28,182 C24.6863,182 22,179.314 22,176 L22,136 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,141)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,141)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="19.0156" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Cédulas de identidad</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,141)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="36.3281" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >de los votantes</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,141)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M22,202 C22,198.686 24.6863,196 28,196 L192,196 C195.314,196 198,198.686 198,202 L198,242 C198,245.314 195.314,248 192,248 L28,248 C24.6863,248 22,245.314 22,242 L22,202 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,214.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,214.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="22.9844" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Papeletas impresas</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,214.5)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M22,268 C22,264.686 24.6863,262 28,262 L192,262 C195.314,262 198,264.686 198,268 L198,308 C198,311.314 195.314,314 192,314 L28,314 C24.6863,314 22,311.314 22,308 L22,268 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,273)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,273)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="35.9844" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Urna y material</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,273)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="55.4688" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >electoral</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,273)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M22,334 C22,330.686 24.6863,328 28,328 L192,328 C195.314,328 198,330.686 198,334 L198,374 C198,377.314 195.314,380 192,380 L28,380 C24.6863,380 22,377.314 22,374 L22,334 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,339)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,339)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="30.1875" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Jurados de mesa</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,30,339)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="44.9844" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >y delegados</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,30,339)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M267,70 C267,66.6863 269.686,64 273,64 L527,64 C530.314,64 533,66.6863 533,70 L533,110 C533,113.314 530.314,116 527,116 L273,116 C269.686,116 267,113.314 267,110 L267,70 Z "/>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >1.</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="10.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > Identificación visual del votante</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >con su cédula</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,75)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+</g>
+
+<g fill="none" stroke="#374151" stroke-opacity="1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="400,116 400,130 " />
+</g>
+
+<g fill="#374151" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<polygon fill-rule="evenodd" vector-effect="none" points="400,130 395.922,120.869 404.078,120.869 " />
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Sans Serif" font-size="9" font-weight="400" font-style="normal" 
+>
+<circle cx="531" cy="66" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="524.281" y="69.8125" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P1</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M267,136 C267,132.686 269.686,130 273,130 L527,130 C530.314,130 533,132.686 533,136 L533,176 C533,179.314 530.314,182 527,182 L273,182 C269.686,182 267,179.314 267,176 L267,136 Z "/>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,141)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,141)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >2.</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="10.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > Firma en la lista y entrega</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,141)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >de la papeleta</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,141)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="none" stroke="#374151" stroke-opacity="1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="400,182 400,196 " />
+</g>
+
+<g fill="#374151" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polygon fill-rule="evenodd" vector-effect="none" points="400,196 395.922,186.869 404.078,186.869 " />
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M267,202 C267,198.686 269.686,196 273,196 L527,196 C530.314,196 533,198.686 533,202 L533,242 C533,245.314 530.314,248 527,248 L273,248 C269.686,248 267,245.314 267,242 L267,202 Z "/>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >3.</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="10.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > Voto en el recinto y depósito</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >de la papeleta en la urna</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="none" stroke="#374151" stroke-opacity="1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="400,248 400,262 " />
+</g>
+
+<g fill="#374151" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polygon fill-rule="evenodd" vector-effect="none" points="400,262 395.922,252.869 404.078,252.869 " />
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M267,268 C267,264.686 269.686,262 273,262 L527,262 C530.314,262 533,264.686 533,268 L533,308 C533,311.314 530.314,314 527,314 L273,314 C269.686,314 267,311.314 267,308 L267,268 Z "/>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,273)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,273)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >4.</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="10.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > Conteo manual de las papeletas</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,273)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >al cierre de la jornada</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,273)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="none" stroke="#374151" stroke-opacity="1" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polyline fill="none" vector-effect="none" points="400,314 400,328 " />
+</g>
+
+<g fill="#374151" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polygon fill-rule="evenodd" vector-effect="none" points="400,328 395.922,318.869 404.078,318.869 " />
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<circle cx="531" cy="264" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="524.281" y="267.813" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P2</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M267,334 C267,330.686 269.686,328 273,328 L527,328 C530.314,328 533,330.686 533,334 L533,374 C533,377.314 530.314,380 527,380 L273,380 C269.686,380 267,377.314 267,374 L267,334 Z "/>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >5.</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="10.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > Llenado del acta en papel</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,279,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >y custodia del acta</text>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,279,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#e8efff" fill-opacity="1" stroke="#1e40af" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<circle cx="531" cy="330" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="524.281" y="333.813" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P3</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M602,70 C602,66.6863 604.686,64 608,64 L772,64 C775.314,64 778,66.6863 778,70 L778,110 C778,113.314 775.314,116 772,116 L608,116 C604.686,116 602,113.314 602,110 L602,70 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,75)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,75)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="26.2188" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Acta de resultados</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,75)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="55.0938" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >en papel</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,75)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<circle cx="776" cy="66" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="769.281" y="69.8125" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P3</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M602,136 C602,132.686 604.686,130 608,130 L772,130 C775.314,130 778,132.686 778,136 L778,176 C778,179.314 775.314,182 772,182 L608,182 C604.686,182 602,179.314 602,176 L602,136 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,148.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,148.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="22.9688" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Papeletas contadas</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,148.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M602,202 C602,198.686 604.686,196 608,196 L772,196 C775.314,196 778,198.686 778,202 L778,242 C778,245.314 775.314,248 772,248 L608,248 C604.686,248 602,245.314 602,242 L602,202 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="42.8281" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Lista firmada</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="46.4219" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >de votantes</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,207)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M602,268 C602,264.686 604.686,262 608,262 L772,262 C775.314,262 778,264.686 778,268 L778,308 C778,311.314 775.314,314 772,314 L608,314 C604.686,314 602,311.314 602,308 L602,268 Z "/>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,280.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,280.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="8.54688" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Resultados proclamados</text>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,280.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#ffffff" fill-opacity="1" stroke="#374151" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M602,334 C602,330.686 604.686,328 608,328 L772,328 C775.314,328 778,330.686 778,334 L778,374 C778,377.314 775.314,380 772,380 L608,380 C604.686,380 602,377.314 602,374 L602,334 Z "/>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="11.7969" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >Reclamos sin evidencia</text>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,610,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="14.6875" y="26.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ >independiente del acta</text>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,610,339)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<circle cx="776" cy="330" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="769.281" y="333.813" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P4</text>
+</g>
+
+<g fill="#d1d5db" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<polygon fill-rule="evenodd" vector-effect="none" points="212,214 234,214 234,200 252,228 234,256 234,242 212,242 " />
+<polygon fill-rule="evenodd" vector-effect="none" points="547,214 569,214 569,200 587,228 569,256 569,242 547,242 " />
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-dasharray="5.6,2.8" stroke-dashoffset="0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<path vector-effect="none" fill-rule="evenodd" d="M10,422 C10,418.686 12.6863,416 16,416 L784,416 C787.314,416 790,418.686 790,422 L790,450 C790,453.314 787.314,456 784,456 L16,456 C12.6863,456 10,453.314 10,450 L10,422 Z "/>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-dasharray="5.6,2.8" stroke-dashoffset="0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,18,428.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,18,428.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="50.0156" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="700" font-style="normal" 
+ >En ninguna etapa</text>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="158.266" y="11.7656" font-family="Liberation Sans" font-size="13" font-weight="400" font-style="normal" 
+ > se registra de forma sistemática quién intervino ni cuándo: no es posible una auditoría posterior.</text>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-dasharray="5.6,2.8" stroke-dashoffset="0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,18,428.5)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#fdecec" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-dasharray="5.6,2.8" stroke-dashoffset="0" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="none" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<circle cx="12" cy="418" r="11"/>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#ffffff" fill-opacity="1" stroke="none" xml:space="preserve" x="5.28125" y="421.813" font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+ >P5</text>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,10,466)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#b91c1c" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,10,466)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#b91c1c" fill-opacity="1" stroke="none" xml:space="preserve" x="0" y="10.8594" font-family="Liberation Sans" font-size="12" font-weight="400" font-style="normal" 
+ >●</text>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#1f2937" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,10,466)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+<text fill="#1f2937" fill-opacity="1" stroke="none" xml:space="preserve" x="7.23438" y="10.8594" font-family="Liberation Sans" font-size="12" font-weight="400" font-style="normal" 
+ > P1–P5: procesos en los que se originan los problemas secundarios descritos en el apartado 1.3.3.</text>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,10,466)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+
+<g fill="#b91c1c" fill-opacity="1" stroke="#ffffff" stroke-opacity="1" stroke-width="1" stroke-linecap="square" stroke-linejoin="bevel" transform="matrix(1,0,0,1,0,0)"
+font-family="Liberation Sans" font-size="11" font-weight="700" font-style="normal" 
+>
+</g>
+</g>
+</svg>

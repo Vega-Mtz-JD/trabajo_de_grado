@@ -1,4 +1,4 @@
-# Anexo A. Manual de usuario y guía de capacitación {.unnumbered}
+# Anexo C. Manual de usuario y guía de capacitación {.unnumbered}
 
 ## Cómo usar este manual
 

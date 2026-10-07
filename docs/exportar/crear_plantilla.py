@@ -129,6 +129,24 @@ def main():
     caracter.font.name = "Liberation Mono"
     caracter.font.size = Pt(9)
 
+    # Figuras (APA 7): número en negrita y título en cursiva arriba, «Nota.» abajo en 10 pt (Art. 34).
+    # «Mantener con el siguiente» evita que el rótulo quede al pie de una página y la imagen en la otra.
+    # En Markdown: ::: {custom-style="Rotulo Figura"} … :::, ídem «Imagen Figura» y «Nota Figura».
+    for nombre, tam, alineacion, unido in (("Rotulo Figura", 11, WD_ALIGN_PARAGRAPH.LEFT, True),
+                                           ("Imagen Figura", 11, WD_ALIGN_PARAGRAPH.CENTER, True),
+                                           ("Nota Figura", 10, WD_ALIGN_PARAGRAPH.JUSTIFY, False)):
+        e = estilo(nombre, WD_STYLE_TYPE.PARAGRAPH)
+        e.base_style = estilos["Normal"]
+        fuente(e, tam)
+        pf = e.paragraph_format
+        pf.alignment = alineacion
+        pf.keep_with_next = unido
+        pf.keep_together = True
+        pf.first_line_indent = Cm(0)
+        pf.line_spacing_rule = WD_LINE_SPACING.SINGLE if nombre != "Rotulo Figura" else WD_LINE_SPACING.DOUBLE
+        pf.space_before = Pt(6) if nombre == "Imagen Figura" else Pt(0)
+        pf.space_after = Pt(12) if nombre == "Nota Figura" else Pt(0 if nombre == "Rotulo Figura" else 6)
+
     doc.save(DESTINO)
     tmp.unlink()
     print(f"Plantilla creada: {DESTINO}")
