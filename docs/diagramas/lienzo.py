@@ -38,6 +38,29 @@ ROJO, ROJO_SUAVE = "#b91c1c", "#fdecec"
 AMBAR, AMBAR_SUAVE = "#92400e", "#fdf3e1"
 GRIS_SUAVE, GRIS_MEDIO = "#f3f4f6", "#d1d5db"
 
+# Color de los iconos según el tipo de objeto (versión ilustrada).
+PIZARRA, PIZARRA_SUAVE = "#334155", "#e2e8f0"
+COLOR_ICONO = {
+    # papel y material electoral
+    **dict.fromkeys(("lista", "cedula", "papeleta", "acta", "firma", "documento", "conteo", "urna", "comprobante"),
+                    (AMBAR, AMBAR_SUAVE)),
+    # personas
+    **dict.fromkeys(("persona", "grupo", "operador", "custodio", "observador", "mesa"), (PIZARRA, PIZARRA_SUAVE)),
+    # equipo y sistema
+    **dict.fromkeys(("monitor", "cabina", "camara", "impresora", "huella", "engranaje", "resultados", "lupa"),
+                    (AZUL, AZUL_SUAVE)),
+    # seguridad y registro
+    **dict.fromkeys(("candado", "llave", "escudo", "base_datos", "cadena", "usb", "bitacora", "correcto"),
+                    (VERDE, VERDE_SUAVE)),
+    # problemas
+    **dict.fromkeys(("alerta", "incorrecto", "reloj", "sin_red"), (ROJO, ROJO_SUAVE)),
+}
+
+
+def colores_icono(nombre: str):
+    return COLOR_ICONO.get(nombre, (AZUL, AZUL_SUAVE))
+
+
 _app = QGuiApplication.instance() or QGuiApplication([])
 
 
@@ -104,9 +127,17 @@ def _documento(html: str, ancho: float, tam: float, color: str, alinear: str) ->
 
 
 class Lienzo:
-    def __init__(self, ancho: float, alto: float):
+    """Con ``ilustrada=True`` las primitivas que reciben ``icono=`` lo dibujan (versión ilustrada
+    de la figura); con ``False`` lo ignoran y la figura queda sobria. ``guardar`` agrega el sufijo
+    ``_ilustrada`` al nombre del archivo en el primer caso."""
+
+    def __init__(self, ancho: float, alto: float, ilustrada: bool = False):
         self.ancho, self.alto = ancho, alto
+        self.ilustrada = ilustrada
         self._ops = []
+
+    def _con_icono(self, icono) -> bool:
+        return bool(self.ilustrada and icono)
 
     # --- Primitivas ----------------------------------------------------------------------------
 
@@ -125,7 +156,8 @@ class Lienzo:
         return Rect(x, y, ancho, alto or h)
 
     def caja(self, x, y, w, h, html="", *, relleno=BLANCO, borde=LINEA, grosor=1.4, radio=6, tam=14,
-             color=TINTA, alinear="center", discontinua=False, sombra=False, relleno_texto=8) -> Rect:
+             color=TINTA, alinear="center", discontinua=False, sombra=False, relleno_texto=8,
+             icono=None, icono_tam=None, icono_color=None, icono_claro=None, icono_arriba=False) -> Rect:
         def op(p: QPainter):
             if sombra:
                 p.setPen(Qt.PenStyle.NoPen)
@@ -135,9 +167,19 @@ class Lienzo:
             p.setBrush(QColor(relleno) if relleno else Qt.BrushStyle.NoBrush)
             p.drawRoundedRect(QRectF(x, y, w, h), radio, radio)
         self._ops.append(op)
+        tx, ty, tw, th = x + relleno_texto, y, w - 2 * relleno_texto, h
+        if self._con_icono(icono):
+            ic, cl = icono_color or borde, icono_claro or BLANCO
+            if icono_arriba:
+                lado = icono_tam or min(34, h * 0.4)
+                self.icono(icono, x + (w - lado) / 2, y + 8, lado, color=ic, claro=cl)
+                ty, th = y + lado + 8, h - lado - 12
+            else:
+                lado = icono_tam or min(34, h - 14)
+                self.icono(icono, x + 10, y + (h - lado) / 2, lado, color=ic, claro=cl)
+                tx, tw = x + lado + 18, w - lado - 18 - relleno_texto
         if html:
-            self.texto(x + relleno_texto, y, w - 2 * relleno_texto, html, tam=tam, color=color, alinear=alinear,
-                       alto=h)
+            self.texto(tx, ty, tw, html, tam=tam, color=color, alinear=alinear, alto=th)
         return Rect(x, y, w, h)
 
     def marco(self, x, y, w, h, titulo="", *, borde=GRIS, relleno=None, tam=13, color=GRIS, radio=10,
@@ -148,7 +190,7 @@ class Lienzo:
             self.texto(x + 10, y + 6, w - 20, f"<b>{titulo}</b>", tam=tam, color=color)
         return Rect(x, y, w, h)
 
-    def proceso_dfd(self, x, y, w, h, numero, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=14) -> Rect:
+    def proceso_dfd(self, x, y, w, h, numero, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=14, icono=None) -> Rect:
         """Proceso al estilo Gane-Sarson: rectángulo redondeado con el número en una franja superior."""
         franja = 22
 
@@ -159,10 +201,15 @@ class Lienzo:
             p.drawLine(QPointF(x, y + franja), QPointF(x + w, y + franja))
         self._ops.append(op)
         self.texto(x, y + 3, w, f"<b>{numero}</b>", tam=tam - 1, color=borde, alinear="center")
-        self.texto(x + 8, y + franja, w - 16, html, tam=tam, alinear="center", alto=h - franja)
+        if self._con_icono(icono):
+            lado = min(36, h - franja - 16)
+            self.icono(icono, x + 10, y + franja + (h - franja - lado) / 2, lado, color=borde, claro=BLANCO)
+            self.texto(x + lado + 16, y + franja, w - lado - 22, html, tam=tam, alinear="center", alto=h - franja)
+        else:
+            self.texto(x + 8, y + franja, w - 16, html, tam=tam, alinear="center", alto=h - franja)
         return Rect(x, y, w, h)
 
-    def almacen(self, x, y, w, h, ident, html, *, relleno=GRIS_SUAVE, borde=LINEA, tam=14) -> Rect:
+    def almacen(self, x, y, w, h, ident, html, *, relleno=GRIS_SUAVE, borde=LINEA, tam=14, icono=None) -> Rect:
         """Almacén de datos (Gane-Sarson): rectángulo abierto a la derecha con el identificador."""
         celda = 34
 
@@ -177,15 +224,25 @@ class Lienzo:
             p.drawLine(QPointF(x + celda, y), QPointF(x + celda, y + h))
         self._ops.append(op)
         self.texto(x, y, celda, f"<b>{ident}</b>", tam=tam - 1, alinear="center", alto=h)
-        self.texto(x + celda + 6, y, w - celda - 10, html, tam=tam, alinear="left", alto=h)
+        dx = 0
+        if self._con_icono(icono):
+            lado = h - 8
+            self.icono(icono, x + celda + 6, y + 4, lado, color=borde, claro=BLANCO)
+            dx = lado + 6
+        self.texto(x + celda + 6 + dx, y, w - celda - 10 - dx, html, tam=tam, alinear="left", alto=h)
         return Rect(x, y, w, h)
 
-    def entidad(self, x, y, w, h, html, *, relleno=GRIS_SUAVE, borde=LINEA, tam=14) -> Rect:
-        """Entidad externa: rectángulo con sombra."""
+    def entidad(self, x, y, w, h, html, *, relleno=GRIS_SUAVE, borde=LINEA, tam=14, icono=None,
+                icono_color=None) -> Rect:
+        """Entidad externa: rectángulo con sombra (en la versión ilustrada, con su icono)."""
+        extra = {}
+        if self._con_icono(icono):            # con icono, texto algo menor que se acomoda solo
+            html, tam = html.replace("<br>", " "), min(tam, 13)
+            extra = dict(icono_tam=min(30, h - 18), relleno_texto=6)
         return self.caja(x, y, w, h, f"<b>{html}</b>", relleno=relleno, borde=borde, grosor=1.6, radio=2,
-                         tam=tam, sombra=True)
+                         tam=tam, sombra=True, icono=icono, icono_color=icono_color, **extra)
 
-    def cilindro(self, x, y, w, h, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=14) -> Rect:
+    def cilindro(self, x, y, w, h, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=14, icono=None) -> Rect:
         elipse = min(16, h / 4)
 
         def op(p: QPainter):
@@ -200,16 +257,26 @@ class Lienzo:
             p.drawPath(cuerpo)
             p.drawEllipse(QRectF(x, y, w, elipse))
         self._ops.append(op)
-        self.texto(x + 6, y + elipse, w - 12, html, tam=tam, alinear="center", alto=h - elipse)
+        if self._con_icono(icono):
+            lado = min(32, h - elipse - 12)
+            self.icono(icono, x + 10, y + elipse + (h - elipse - lado) / 2, lado, color=borde, claro=BLANCO)
+            self.texto(x + lado + 16, y + elipse, w - lado - 22, html, tam=tam, alinear="center", alto=h - elipse)
+        else:
+            self.texto(x + 6, y + elipse, w - 12, html, tam=tam, alinear="center", alto=h - elipse)
         return Rect(x, y, w, h)
 
-    def circulo(self, cx, cy, r, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=15, grosor=2) -> Rect:
+    def circulo(self, cx, cy, r, html, *, relleno=AZUL_SUAVE, borde=AZUL, tam=15, grosor=2, icono=None) -> Rect:
         def op(p: QPainter):
             p.setPen(self._pluma(borde, grosor))
             p.setBrush(QColor(relleno))
             p.drawEllipse(QPointF(cx, cy), r, r)
         self._ops.append(op)
-        self.texto(cx - r * 0.8, cy - r, r * 1.6, html, tam=tam, alinear="center", alto=2 * r)
+        if self._con_icono(icono):
+            lado = r * 0.55
+            self.icono(icono, cx - lado / 2, cy - r * 0.78, lado, color=borde, claro=BLANCO)
+            self.texto(cx - r * 0.8, cy - r * 0.2, r * 1.6, html, tam=tam, alinear="center", alto=r * 1.05)
+        else:
+            self.texto(cx - r * 0.8, cy - r, r * 1.6, html, tam=tam, alinear="center", alto=2 * r)
         return Rect(cx - r, cy - r, 2 * r, 2 * r)
 
     def insignia(self, cx, cy, texto, *, relleno=ROJO, color=BLANCO, r=11, tam=11) -> None:
@@ -240,6 +307,21 @@ class Lienzo:
             p.drawText(QRectF(-h / 2, -w / 2, h, w), Qt.AlignmentFlag.AlignCenter | Qt.TextFlag.TextWordWrap, texto)
             p.restore()
         self._ops.append(op)
+
+    def icono(self, nombre, x, y, tam=40, *, color=AZUL, claro=AZUL_SUAVE, fondo=None, radio_fondo=None) -> Rect:
+        """Icono vectorial de ``iconos.py`` en (x, y) con lado ``tam``. Con ``fondo`` se dibuja sobre
+        un círculo de ese color (y ``radio_fondo``, por defecto un poco mayor que el icono)."""
+        import iconos
+
+        def op(p: QPainter):
+            if fondo:
+                r = radio_fondo or tam * 0.68
+                p.setPen(Qt.PenStyle.NoPen)
+                p.setBrush(QColor(fondo))
+                p.drawEllipse(QPointF(x + tam / 2, y + tam / 2), r, r)
+            iconos.dibujar(p, nombre, x, y, tam, color, claro)
+        self._ops.append(op)
+        return Rect(x, y, tam, tam)
 
     def flecha_gruesa(self, x, y, w, h, *, relleno=GRIS_MEDIO) -> None:
         """Flecha ancha hacia la derecha (para esquemas de entrada → proceso → salida)."""
@@ -330,6 +412,8 @@ class Lienzo:
 
     def guardar(self, nombre: str) -> Path:
         """Escribe ``<nombre>.png`` (300 ppp, ancho físico proporcional) y ``<nombre>.svg``."""
+        if self.ilustrada:
+            nombre += "_ilustrada"
         SALIDA.mkdir(parents=True, exist_ok=True)
         imagen = QImage(round(self.ancho * PIXELES_POR_UNIDAD), round(self.alto * PIXELES_POR_UNIDAD),
                         QImage.Format.Format_ARGB32)

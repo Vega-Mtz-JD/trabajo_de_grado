@@ -8,7 +8,9 @@ docs/diagramas/generar.sh            # todas las figuras
 docs/diagramas/generar.sh fig_1_3    # solo las que empiezan así
 ```
 
-Salida: `docs/adjuntos/diagramas/<nombre>.png` (300 ppp, 16 cm de ancho útil) y `.svg`.
+Salida: `docs/adjuntos/diagramas/<nombre>.png` (300 ppp, 16 cm de ancho útil) y `.svg`, en **dos
+versiones con el mismo contenido**: sobria (`<nombre>.png`) e ilustrada con iconos
+(`<nombre>_ilustrada.png`). Comparación lado a lado en [[galeria]].
 
 | Archivo | Figura | Dónde va |
 |---|---|---|
@@ -22,6 +24,11 @@ Salida: `docs/adjuntos/diagramas/<nombre>.png` (300 ppp, 16 cm de ancho útil) y
 
 - `lienzo.py`: primitivas (cajas, procesos y almacenes de DFD Gane-Sarson, entidades, cilindros,
   flechas con rótulo, marcos, insignias P1/O1). 800 unidades = 16 cm; texto base 13–14 ≈ 8 pt.
+- `iconos.py`: 35 iconos vectoriales propios (personas, documentos, urna, huella, cámara, impresora,
+  candado, llave, cadena de bloques, USB…) en estilo plano de dos tonos; color por tipo de objeto
+  (`COLOR_ICONO` en `lienzo.py`). Catálogo: `muestra_iconos.py` → `muestra_iconos.png`.
+- `Lienzo(ancho, alto, ilustrada)`: con `ilustrada=True`, las primitivas que reciben `icono=` lo
+  dibujan; con `False` lo ignoran. Cada `fig_*.py` genera las dos versiones.
 - `arbol.py`: geometría común del árbol de problemas y del de objetivos (uno es espejo del otro).
 - Fuente Liberation Sans (mismas medidas que Arial). Paleta sobria legible en escala de grises.
 
